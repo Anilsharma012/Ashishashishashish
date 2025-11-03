@@ -1042,7 +1042,7 @@ export default function EnhancedSellerDashboard() {
                       {filteredProperties.map((property: any, idx) => {
                         const id = property._id || property.id;
                         return (
-                          <TableRow key={id || property.title || idx}>
+                          <TableRow key={id || property.title || idx} className={property.approvalStatus === "rejected" ? "bg-red-50" : ""}>
                             <TableCell>
                               <div>
                                 <div className="font-medium">{property.title}</div>
@@ -1060,10 +1060,15 @@ export default function EnhancedSellerDashboard() {
                               <div className="text-sm">{property.location?.address}</div>
                             </TableCell>
                             <TableCell>
-                              {getStatusBadge(property.approvalStatus)}
-                              {property.approvalStatus === "rejected" && property.rejectionReason && (
-                                <p className="text-xs text-red-600 mt-1">Reason: {property.rejectionReason}</p>
-                              )}
+                              <div>
+                                {getStatusBadge(property.approvalStatus)}
+                                {property.approvalStatus === "rejected" && property.rejectionReason && (
+                                  <div className="bg-red-50 border border-red-200 rounded p-2 mt-2">
+                                    <p className="text-xs font-semibold text-red-800 mb-1">Rejection Reason:</p>
+                                    <p className="text-xs text-red-700">{property.rejectionReason}</p>
+                                  </div>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center space-x-1">
