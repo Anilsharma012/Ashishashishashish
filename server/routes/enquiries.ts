@@ -1,11 +1,13 @@
 import { RequestHandler } from "express";
 import { ObjectId } from "mongodb";
 import { getDatabase } from "../db/mongodb";
+import { sendEmail } from "../utils/mailer";
 
 interface EnquiryData {
   propertyId: string;
   name: string;
   phone: string;
+  email?: string;
   message: string;
   timestamp: string;
 }
@@ -20,7 +22,7 @@ interface EnquiryDocument extends EnquiryData {
 // POST /api/enquiries - Submit a new enquiry
 export const submitEnquiry: RequestHandler = async (req, res) => {
   try {
-    const { propertyId, name, phone, message, timestamp } =
+    const { propertyId, name, phone, email, message, timestamp } =
       req.body as EnquiryData;
 
     // Validate required fields
@@ -92,6 +94,11 @@ export const submitEnquiry: RequestHandler = async (req, res) => {
       status: "new",
     };
 
+    // Add email if provided
+    if (email && email.trim()) {
+      (enquiryDoc as any).email = email.trim();
+    }
+
     // Insert enquiry
     const result = await db.collection("enquiries").insertOne(enquiryDoc);
 
@@ -130,9 +137,107 @@ export const submitEnquiry: RequestHandler = async (req, res) => {
       `✅ New enquiry received for property ${propertyId} from ${name} (${phone})`,
     );
 
+    // Send email notifications asynchronously (don't block response)
+    (async () => {
+      try {
+        // Get admin email from settings
+        const adminSettings = await db.collection("admin_settings").findOne({});
+        const adminEmail = adminSettings?.contact?.email || adminSettings?.general?.contactEmail || process.env.ADMIN_EMAIL || "admin@ashishproperties.in";
+
+        // Send notification email to admin
+        const adminEmailHTML = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #C70000 0%, #8B0000 100%); padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">New Enquiry Received!</h1>
+            </div>
+            <div style="padding: 30px; background: #f9f9f9;">
+              <h2 style="color: #333; margin-top: 0;">Property Enquiry Details</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 5px 0;"><strong>Property:</strong> ${property.title}</p>
+                <p style="margin: 5px 0;"><strong>Property Type:</strong> ${property.propertyType}</p>
+                <p style="margin: 5px 0;"><strong>Location:</strong> ${property.location?.city || ''}, ${property.location?.state || ''}</p>
+                <p style="margin: 5px 0;"><strong>Price:</strong> ₹${property.price?.toLocaleString()}</p>
+              </div>
+              <h3 style="color: #333;">Customer Information</h3>
+              <div style="background: white; padding: 20px; border-radius: 8px;">
+                <p style="margin: 5px 0;"><strong>Name:</strong> ${name}</p>
+                <p style="margin: 5px 0;"><strong>Phone:</strong> <a href="tel:${phone}" style="color: #C70000;">${phone}</a></p>
+                <p style="margin: 10px 0 5px 0;"><strong>Message:</strong></p>
+                <p style="margin: 5px 0; padding: 10px; background: #f5f5f5; border-left: 3px solid #C70000;">${message}</p>
+              </div>
+              <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <p style="margin: 0; color: #856404;"><strong>Action Required:</strong> Please contact the customer as soon as possible at ${phone}</p>
+              </div>
+            </div>
+            <div style="background: #333; padding: 15px; text-align: center; color: #fff;">
+              <p style="margin: 0; font-size: 12px;">Ashish Properties - Property Management System</p>
+            </div>
+          </div>
+        `;
+
+        await sendEmail(
+          adminEmail,
+          `New Enquiry: ${property.title}`,
+          adminEmailHTML,
+          `New enquiry from ${name} (${phone}) for ${property.title}. Message: ${message}`
+        );
+
+        console.log(`📧 Admin notification email sent for enquiry ${result.insertedId}`);
+
+        // Send confirmation email to user if email provided
+        if (email && email.trim()) {
+          const userEmailHTML = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #C70000 0%, #8B0000 100%); padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0;">Enquiry Confirmation</h1>
+              </div>
+              <div style="padding: 30px; background: #f9f9f9;">
+                <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Dear ${name},</p>
+                <p style="color: #333; margin-bottom: 20px;">Thank you for your interest in our property. We have received your enquiry and will get back to you shortly.</p>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h2 style="color: #333; margin-top: 0; font-size: 18px;">Enquiry Details</h2>
+                  <p style="margin: 5px 0;"><strong>Property:</strong> ${property.title}</p>
+                  <p style="margin: 5px 0;"><strong>Location:</strong> ${property.location?.city || ''}, ${property.location?.state || ''}</p>
+                  <p style="margin: 5px 0;"><strong>Price:</strong> ₹${property.price?.toLocaleString()}</p>
+                  <p style="margin: 10px 0 5px 0;"><strong>Your Message:</strong></p>
+                  <p style="margin: 5px 0; padding: 10px; background: #f5f5f5; border-left: 3px solid #C70000;">${message}</p>
+                </div>
+
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; margin: 20px 0;">
+                  <p style="margin: 0; color: #2e7d32;"><strong>What's Next?</strong></p>
+                  <p style="margin: 10px 0 0 0; color: #2e7d32;">Our team will contact you at <strong>${phone}</strong> within the next 24 hours to discuss your requirements and schedule a property visit if needed.</p>
+                </div>
+
+                <p style="color: #333; margin-top: 20px;">If you have any immediate questions, feel free to call us at <a href="tel:+917419100032" style="color: #C70000; text-decoration: none;">+91 7419100032</a></p>
+                
+                <p style="color: #333; margin-top: 20px;">Best regards,<br><strong>Team Ashish Properties</strong></p>
+              </div>
+              <div style="background: #333; padding: 15px; text-align: center; color: #fff;">
+                <p style="margin: 0; font-size: 12px;">Ashish Properties - Your Trusted Property Partner</p>
+                <p style="margin: 5px 0 0 0; font-size: 11px;">📞 +91 7419100032 • ✉️ info@ashishproperties.in</p>
+              </div>
+            </div>
+          `;
+
+          await sendEmail(
+            email.trim(),
+            `Enquiry Confirmation - ${property.title}`,
+            userEmailHTML,
+            `Dear ${name}, Thank you for your interest in ${property.title}. We have received your enquiry and will contact you soon at ${phone}.`
+          );
+
+          console.log(`📧 User confirmation email sent to ${email} for enquiry ${result.insertedId}`);
+        }
+      } catch (emailError) {
+        console.error("⚠️ Failed to send email notifications:", emailError);
+        // Don't fail the request if email fails
+      }
+    })();
+
     res.status(201).json({
       success: true,
-      message: "Enquiry submitted successfully",
+      message: "Enquiry submitted successfully! We will contact you soon.",
       data: {
         enquiryId: result.insertedId,
         propertyId: propertyId,
@@ -231,12 +336,13 @@ export const getEnquiries: RequestHandler = async (req, res) => {
   }
 };
 
-// PUT /api/enquiries/:id/status - Update enquiry status
+// PATCH /api/enquiries/:id - Update enquiry status (admin only)
 export const updateEnquiryStatus: RequestHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
+    // Validate ID
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -244,10 +350,11 @@ export const updateEnquiryStatus: RequestHandler = async (req, res) => {
       });
     }
 
-    if (!["new", "contacted", "closed"].includes(status)) {
+    // Validate status
+    if (!status || !["new", "contacted", "closed"].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid status. Must be 'new', 'contacted', or 'closed'",
+        message: "Invalid status. Must be: new, contacted, or closed",
       });
     }
 
@@ -260,7 +367,7 @@ export const updateEnquiryStatus: RequestHandler = async (req, res) => {
           status,
           updatedAt: new Date(),
         },
-      },
+      }
     );
 
     if (result.matchedCount === 0) {

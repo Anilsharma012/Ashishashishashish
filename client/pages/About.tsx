@@ -124,7 +124,7 @@ export default function About() {
                 Contact
               </h2>
               <p className="text-gray-700">
-                Call/WhatsApp: 📞 +91-9896095599 • Email: info@ashishproperties.in
+                Call/WhatsApp: 📞 +91-7419100032 • Email: info@ashishproperties.in
                 • Office: 📌 Full address here
               </p>
             </section>

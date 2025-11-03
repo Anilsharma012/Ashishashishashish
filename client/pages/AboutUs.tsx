@@ -57,7 +57,7 @@ export default function AboutUs() {
   const phone =
     settings?.contact?.phone ||
     settings?.general?.contactPhone ||
-    "+91 9896095599";
+    "+91 7419100032";
   const city = useMemo(() => {
     const parts = address
       .split(",")
@@ -81,7 +81,7 @@ export default function AboutUs() {
 
   const whatsAppLink = useMemo(() => {
     const digits = (phone || "").replace(/[^0-9]/g, "");
-    return digits ? `https://wa.me/${digits}` : "https://wa.me/9896095599";
+    return digits ? `https://wa.me/${digits}` : "https://wa.me/917419100032";
   }, [phone]);
 
   // SEO
@@ -188,7 +188,7 @@ export default function AboutUs() {
               Contact
             </h2>
             <p className="text-gray-700">
-              Call/WhatsApp: 📞 +91-9896095599 • Email: info@ashishproperties.in •
+              Call/WhatsApp: 📞 +91-7419100032 • Email: info@ashishproperties.in •
               Office: 📌 Full address here
             </p>
           </div>

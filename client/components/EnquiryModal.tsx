@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Phone, User, MessageSquare, Send } from "lucide-react";
+import { X, Phone, User, MessageSquare, Send, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface EnquiryModalProps {
@@ -13,6 +13,7 @@ interface EnquiryModalProps {
 interface EnquiryFormData {
   name: string;
   phone: string;
+  email: string;
   message: string;
 }
 
@@ -26,6 +27,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({
   const [formData, setFormData] = useState<EnquiryFormData>({
     name: "",
     phone: "",
+    email: "",
     message: `Hi, I'm interested in "${propertyTitle}". Could you please provide more details?`,
   });
 
@@ -55,6 +57,15 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({
       return;
     }
 
+    // Validate email if provided
+    if (formData.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+    }
+
     if (!formData.message.trim()) {
       toast.error("Please enter your message");
       return;
@@ -79,6 +90,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({
           propertyId,
           name: formData.name.trim(),
           phone: formData.phone.trim(),
+          email: formData.email.trim(),
           message: formData.message.trim(),
           timestamp: new Date().toISOString(),
         }),
@@ -94,6 +106,7 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({
         setFormData({
           name: "",
           phone: "",
+          email: "",
           message: `Hi, I'm interested in "${propertyTitle}". Could you please provide more details?`,
         });
 
@@ -207,6 +220,29 @@ const EnquiryModal: React.FC<EnquiryModalProps> = ({
                 required
               />
             </div>
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Email Address <span className="text-gray-400 text-xs">(optional)</span>
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-colors"
+                placeholder="your.email@example.com"
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">We'll send you a confirmation email if provided</p>
           </div>
 
           {/* Quick Messages */}

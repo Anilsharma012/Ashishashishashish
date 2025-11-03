@@ -113,7 +113,7 @@ export default function TermsAndConditions() {
               </li>
               <li>
                 <span className="font-medium">Contact:</span> Email:
-                legal@ashishproperties.in • Phone: +91-9896095599 • Address: 📌
+                legal@ashishproperties.in • Phone: +91-7419100032 • Address: 📌
                 Full address
               </li>
             </ol>

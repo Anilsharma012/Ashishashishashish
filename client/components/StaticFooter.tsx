@@ -81,7 +81,7 @@ export default function StaticFooter() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>+91 9896095599</span>
+                <span>+91 7419100032</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
