@@ -1066,14 +1066,26 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
 
     const objectIds: ObjectId[] = [];
     for (const id of propertyIds) {
-      if (!ObjectId.isValid(id)) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        console.error(`❌ Invalid ObjectId: ${idString}`);
         return res.status(400).json({
           success: false,
-          error: `Invalid property ID format: ${id}`,
+          error: `Invalid property ID format: ${idString}`,
         });
       }
-      objectIds.push(new ObjectId(id));
+      try {
+        objectIds.push(new ObjectId(idString));
+      } catch (err) {
+        console.error(`❌ Error creating ObjectId from ${idString}:`, err);
+        return res.status(400).json({
+          success: false,
+          error: `Failed to process property ID: ${idString}`,
+        });
+      }
     }
+
+    console.log(`✅ Valid ObjectIds created:`, objectIds.map(id => id.toString()));
 
     const result = await db
       .collection("properties")
