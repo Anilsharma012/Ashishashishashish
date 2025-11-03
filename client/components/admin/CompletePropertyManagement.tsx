@@ -441,7 +441,7 @@ function CompletePropertyManagement() {
     }
   };
 
-  const updateApprovalStatus = async (propertyId: string, status: "approved" | "rejected") => {
+  const updateApprovalStatus = async (propertyId: string, status: "approved" | "rejected", reason?: string) => {
     if (!token) {
       setError("Authentication required");
       return;
@@ -885,7 +885,7 @@ function CompletePropertyManagement() {
             </TableHeader>
             <TableBody>
               {properties.map((property) => {
-                console.log(`��� Rendering property:`, {
+                console.log(`🔍 Rendering property:`, {
                   id: property._id,
                   title: property.title,
                   approvalStatus: property.approvalStatus
