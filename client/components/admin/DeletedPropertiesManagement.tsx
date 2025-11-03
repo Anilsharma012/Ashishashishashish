@@ -84,13 +84,14 @@ export default function DeletedPropertiesManagement() {
     try {
       setActionLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/admin/properties/bulk/restore`,
+      const { api } = await import('../../lib/api');
+      const response = await api.put(
+        "admin/properties/bulk/restore",
         { propertyIds: Array.from(selectedIds) },
-        { headers: { Authorization: `Bearer ${token}` } }
+        token
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success(response.data.data.message);
         setSelectedIds(new Set());
         fetchDeletedProperties();
@@ -112,15 +113,14 @@ export default function DeletedPropertiesManagement() {
     try {
       setActionLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `${API_URL}/api/admin/properties/bulk/permanent`,
-        {
-          data: { propertyIds: Array.from(selectedIds) },
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const { api } = await import('../../lib/api');
+      const response = await api.delete(
+        "admin/properties/bulk/permanent",
+        token,
+        { propertyIds: Array.from(selectedIds) }
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success(response.data.data.message);
         setSelectedIds(new Set());
         setDeleteDialogOpen(false);
@@ -137,13 +137,14 @@ export default function DeletedPropertiesManagement() {
   const handleRestoreSingle = async (propertyId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/admin/properties/${propertyId}/restore`,
+      const { api } = await import('../../lib/api');
+      const response = await api.put(
+        `admin/properties/${propertyId}/restore`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        token
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success("Property restored successfully");
         fetchDeletedProperties();
       }
@@ -156,12 +157,13 @@ export default function DeletedPropertiesManagement() {
   const handlePermanentDeleteSingle = async (propertyId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `${API_URL}/api/admin/properties/${propertyId}/permanent`,
-        { headers: { Authorization: `Bearer ${token}` } }
+      const { api } = await import('../../lib/api');
+      const response = await api.delete(
+        `admin/properties/${propertyId}/permanent`,
+        token
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success("Property permanently deleted");
         fetchDeletedProperties();
       }
