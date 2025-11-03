@@ -69,7 +69,7 @@ const mohallas = [
 /** ---------------- Component ---------------- */
 export default function CategoryProperties() {
   const { category, subcategory, propertyType, slug } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
@@ -77,8 +77,31 @@ export default function CategoryProperties() {
   // Drawer / sidebar
   const [showFilters, setShowFilters] = useState(false);
 
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+  // Initialize filters from URL params on mount
+  const getInitialFilters = (): FilterState => {
+    return {
+      priceType: searchParams.get("priceType") || "",
+      minPrice: searchParams.get("minPrice") || "",
+      maxPrice: searchParams.get("maxPrice") || "",
+      bedrooms: searchParams.get("bedrooms") || "",
+      bathrooms: searchParams.get("bathrooms") || "",
+      minArea: searchParams.get("minArea") || "",
+      maxArea: searchParams.get("maxArea") || "",
+      sector: searchParams.get("sector") || "",
+      mohalla: searchParams.get("mohalla") || "",
+      sortBy: searchParams.get("sortBy") || "date_desc",
+    };
+  };
+
+  const [filters, setFilters] = useState<FilterState>(getInitialFilters());
   const [categoryData, setCategoryData] = useState<any>(null);
+
+  /** Sync filters with URL params when searchParams change (e.g., browser back/forward) */
+  useEffect(() => {
+    const updatedFilters = getInitialFilters();
+    setFilters(updatedFilters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   /** Lock body scroll when mobile drawer open */
   useEffect(() => {
@@ -191,11 +214,28 @@ export default function CategoryProperties() {
   };
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [key]: value };
+      
+      // Update URL params
+      const params = new URLSearchParams(searchParams);
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      setSearchParams(params, { replace: true });
+      
+      return newFilters;
+    });
   };
 
   const clearFilters = () => {
     setFilters(initialFilters);
+    
+    // Clear all filter params from URL, keeping only non-filter params
+    const params = new URLSearchParams();
+    setSearchParams(params, { replace: true });
   };
 
   const getActiveFilterCount = () =>
