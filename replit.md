@@ -4,6 +4,17 @@ A production-ready full-stack property management application built with React a
 
 ## Recent Changes (November 2025)
 
+### Property Rejection and Resubmission Workflow
+- Implemented complete property rejection and resubmission system with admin moderation
+- Admin rejection UI requires specific rejection reasons with region dropdown and detailed explanation
+- Added "Edit & Resubmit" button to MyProperties dashboard for rejected properties
+- Rejection reasons displayed prominently to sellers with formatted "Region: Specific Reason" structure
+- Enhanced PostProperty page to support editing mode via URL parameter (`?edit=propertyId`)
+- Automatic property data fetching and form pre-filling for rejected properties
+- Resubmission workflow automatically updates property status from "Rejected" to "Pending Review"
+- Backend resubmit endpoint at `/api/seller/properties/:id/resubmit` handles status transitions
+- Comprehensive error handling and user feedback throughout the workflow
+
 ### Category-Property Filtering Enhancement
 - Fixed critical category filtering logic in `CategoryProperties.tsx` to properly separate `priceType` (sale/rent) from `propertyType` (residential/commercial/plot)
 - Properties now display correctly in their respective category pages based on URL structure (e.g., /buy/residential/1bhk)
