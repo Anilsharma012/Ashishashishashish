@@ -1098,7 +1098,12 @@ export default function EnhancedSellerDashboard() {
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
                                 {property.approvalStatus === "rejected" && (
-                                  <Button size="sm" variant="outline" onClick={() => handleResubmit(id)}>
+                                  <Button
+                                    size="sm"
+                                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                                    onClick={() => handleResubmit(id)}
+                                    title="Click to resubmit this property for review. You can edit the property before resubmitting."
+                                  >
                                     Resubmit
                                   </Button>
                                 )}
