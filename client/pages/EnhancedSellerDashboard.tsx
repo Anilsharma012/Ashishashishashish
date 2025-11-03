@@ -1062,10 +1062,17 @@ export default function EnhancedSellerDashboard() {
                             <TableCell>
                               <div>
                                 {getStatusBadge(property.approvalStatus)}
-                                {property.approvalStatus === "rejected" && property.rejectionReason && (
+                                {property.approvalStatus === "rejected" && (
                                   <div className="bg-red-50 border border-red-200 rounded p-2 mt-2">
-                                    <p className="text-xs font-semibold text-red-800 mb-1">Rejection Reason:</p>
-                                    <p className="text-xs text-red-700">{property.rejectionReason}</p>
+                                    {property.rejectionReason && (
+                                      <div>
+                                        <p className="text-xs font-semibold text-red-800 mb-1">Rejection Reason:</p>
+                                        <p className="text-xs text-red-700">{property.rejectionReason}</p>
+                                      </div>
+                                    )}
+                                    {!property.rejectionReason && (
+                                      <p className="text-xs text-red-700">Property rejected by admin</p>
+                                    )}
                                   </div>
                                 )}
                               </div>
