@@ -1365,10 +1365,11 @@ export const resubmitSellerProperty: RequestHandler = async (req, res) => {
         $set: {
           approvalStatus: "pending",
           rejectionReason: "",
+          rejectionRegion: "",
           adminComments: "",
           updatedAt: new Date(),
         },
-        $unset: { approvedAt: "", approvedBy: "" },
+        $unset: { approvedAt: "", approvedBy: "", rejectedAt: "" },
       },
     );
 
