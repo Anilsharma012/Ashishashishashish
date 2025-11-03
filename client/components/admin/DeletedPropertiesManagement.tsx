@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Property } from "../../../shared/types";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
@@ -11,12 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import {
-  RefreshCw,
-  Trash2,
-  CheckSquare,
-  Square,
-} from "lucide-react";
+import { RefreshCw, Trash2, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -28,8 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function DeletedPropertiesManagement() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -46,11 +38,10 @@ export default function DeletedPropertiesManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/admin/properties/deleted`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { api } = await import("../../lib/api");
+      const response = await api.get("admin/properties/deleted", token);
 
-      if (response.data.success) {
+      if (response.data?.success) {
         setProperties(response.data.data);
       }
     } catch (error) {
@@ -88,13 +79,14 @@ export default function DeletedPropertiesManagement() {
     try {
       setActionLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/admin/properties/bulk/restore`,
+      const { api } = await import("../../lib/api");
+      const response = await api.put(
+        "admin/properties/bulk/restore",
         { propertyIds: Array.from(selectedIds) },
-        { headers: { Authorization: `Bearer ${token}` } }
+        token,
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success(response.data.data.message);
         setSelectedIds(new Set());
         fetchDeletedProperties();
@@ -116,15 +108,14 @@ export default function DeletedPropertiesManagement() {
     try {
       setActionLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `${API_URL}/api/admin/properties/bulk/permanent`,
-        {
-          data: { propertyIds: Array.from(selectedIds) },
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const { api } = await import("../../lib/api");
+      const response = await api.delete(
+        "admin/properties/bulk/permanent",
+        token,
+        { propertyIds: Array.from(selectedIds) },
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success(response.data.data.message);
         setSelectedIds(new Set());
         setDeleteDialogOpen(false);
@@ -141,13 +132,14 @@ export default function DeletedPropertiesManagement() {
   const handleRestoreSingle = async (propertyId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/api/admin/properties/${propertyId}/restore`,
+      const { api } = await import("../../lib/api");
+      const response = await api.put(
+        `admin/properties/${propertyId}/restore`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        token,
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success("Property restored successfully");
         fetchDeletedProperties();
       }
@@ -160,12 +152,13 @@ export default function DeletedPropertiesManagement() {
   const handlePermanentDeleteSingle = async (propertyId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.delete(
-        `${API_URL}/api/admin/properties/${propertyId}/permanent`,
-        { headers: { Authorization: `Bearer ${token}` } }
+      const { api } = await import("../../lib/api");
+      const response = await api.delete(
+        `admin/properties/${propertyId}/permanent`,
+        token,
       );
 
-      if (response.data.success) {
+      if (response.data?.success) {
         toast.success("Property permanently deleted");
         fetchDeletedProperties();
       }
@@ -214,7 +207,8 @@ export default function DeletedPropertiesManagement() {
           <div className="flex items-center gap-2">
             <CheckSquare className="h-5 w-5 text-blue-600" />
             <span className="text-sm font-medium text-blue-900">
-              {selectedIds.size} {selectedIds.size === 1 ? "property" : "properties"} selected
+              {selectedIds.size}{" "}
+              {selectedIds.size === 1 ? "property" : "properties"} selected
             </span>
           </div>
           <div className="flex gap-2">
@@ -252,7 +246,8 @@ export default function DeletedPropertiesManagement() {
                 <TableHead className="w-12">
                   <Checkbox
                     checked={
-                      properties.length > 0 && selectedIds.size === properties.length
+                      properties.length > 0 &&
+                      selectedIds.size === properties.length
                     }
                     onCheckedChange={toggleSelectAll}
                   />
@@ -328,8 +323,9 @@ export default function DeletedPropertiesManagement() {
             <AlertDialogTitle>Permanently Delete Properties?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete{" "}
-              {selectedIds.size} {selectedIds.size === 1 ? "property" : "properties"}{" "}
-              from the database.
+              {selectedIds.size}{" "}
+              {selectedIds.size === 1 ? "property" : "properties"} from the
+              database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

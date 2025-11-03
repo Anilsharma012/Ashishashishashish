@@ -408,7 +408,7 @@ export const getAllProperties: RequestHandler = async (req, res) => {
     const filter: any = {};
     // Exclude deleted properties by default
     filter.isDeleted = { $ne: true };
-    
+
     if (status && status !== "all") {
       filter.status = status;
     }
@@ -1010,18 +1010,16 @@ export const deleteProperty: RequestHandler = async (req, res) => {
     const { propertyId } = req.params;
     const adminId = (req as any).user?.userId;
 
-    const result = await db
-      .collection("properties")
-      .updateOne(
-        { _id: new ObjectId(propertyId) },
-        { 
-          $set: { 
-            isDeleted: true, 
-            deletedAt: new Date(),
-            deletedBy: adminId 
-          } 
-        }
-      );
+    const result = await db.collection("properties").updateOne(
+      { _id: new ObjectId(propertyId) },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: adminId,
+        },
+      },
+    );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
@@ -1052,41 +1050,76 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
     const { propertyIds } = req.body;
     const adminId = (req as any).user?.userId;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    console.log("🗑️ Bulk delete request received");
+    console.log("📋 Property IDs:", propertyIds);
+    console.log("📋 Admin ID:", adminId);
+
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
+      console.error("❌ Invalid propertyIds:", propertyIds);
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
-    const result = await db
-      .collection("properties")
-      .updateMany(
-        { _id: { $in: objectIds } },
-        { 
-          $set: { 
-            isDeleted: true, 
-            deletedAt: new Date(),
-            deletedBy: adminId 
-          } 
-        }
-      );
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        console.error(`❌ Invalid ObjectId: ${idString}`);
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      try {
+        objectIds.push(new ObjectId(idString));
+      } catch (err) {
+        console.error(`❌ Error creating ObjectId from ${idString}:`, err);
+        return res.status(400).json({
+          success: false,
+          error: `Failed to process property ID: ${idString}`,
+        });
+      }
+    }
+
+    console.log(
+      `✅ Valid ObjectIds created:`,
+      objectIds.map((id) => id.toString()),
+    );
+
+    const result = await db.collection("properties").updateMany(
+      { _id: { $in: objectIds } },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: adminId,
+        },
+      },
+    );
 
     const response: ApiResponse<{ message: string; deletedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties deleted successfully`,
-        deletedCount: result.modifiedCount 
+        deletedCount: result.modifiedCount,
       },
     };
 
     res.json(response);
-  } catch (error) {
-    console.error("Error bulk deleting properties:", error);
+  } catch (error: any) {
+    console.error("❌ Error bulk deleting properties:", error);
+    console.error("📋 Error stack:", error?.stack);
+    console.error("📋 Request body:", req.body);
     res.status(500).json({
       success: false,
       error: "Failed to bulk delete properties",
+      details: error?.message,
     });
   }
 };
@@ -1095,7 +1128,7 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
 export const getDeletedProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    
+
     const deletedProperties = await db
       .collection("properties")
       .find({ isDeleted: true })
@@ -1123,15 +1156,13 @@ export const restoreProperty: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyId } = req.params;
 
-    const result = await db
-      .collection("properties")
-      .updateOne(
-        { _id: new ObjectId(propertyId), isDeleted: true },
-        { 
-          $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
-          $set: { updatedAt: new Date() }
-        }
-      );
+    const result = await db.collection("properties").updateOne(
+      { _id: new ObjectId(propertyId), isDeleted: true },
+      {
+        $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
+        $set: { updatedAt: new Date() },
+      },
+    );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
@@ -1161,35 +1192,49 @@ export const restoreProperties: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyIds } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
-    const result = await db
-      .collection("properties")
-      .updateMany(
-        { _id: { $in: objectIds }, isDeleted: true },
-        { 
-          $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
-          $set: { updatedAt: new Date() }
-        }
-      );
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      objectIds.push(new ObjectId(idString));
+    }
+
+    const result = await db.collection("properties").updateMany(
+      { _id: { $in: objectIds }, isDeleted: true },
+      {
+        $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
+        $set: { updatedAt: new Date() },
+      },
+    );
 
     const response: ApiResponse<{ message: string; restoredCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties restored successfully`,
-        restoredCount: result.modifiedCount 
+        restoredCount: result.modifiedCount,
       },
     };
 
     res.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error bulk restoring properties:", error);
+    console.error("📋 Error details:", error?.message);
     res.status(500).json({
       success: false,
       error: "Failed to bulk restore properties",
@@ -1235,29 +1280,45 @@ export const permanentDeleteProperties: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyIds } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      objectIds.push(new ObjectId(idString));
+    }
+
     const result = await db
       .collection("properties")
       .deleteMany({ _id: { $in: objectIds }, isDeleted: true });
 
     const response: ApiResponse<{ message: string; deletedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.deletedCount} properties permanently deleted`,
-        deletedCount: result.deletedCount 
+        deletedCount: result.deletedCount,
       },
     };
 
     res.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error bulk permanently deleting properties:", error);
+    console.error("📋 Error details:", error?.message);
     res.status(500).json({
       success: false,
       error: "Failed to bulk permanently delete properties",
@@ -1271,33 +1332,47 @@ export const bulkUpdatePropertiesStatus: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyIds, status } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    if (!status || !['active', 'inactive', 'sold', 'rented'].includes(status)) {
+    if (!status || !["active", "inactive", "sold", "rented"].includes(status)) {
       return res.status(400).json({
         success: false,
         error: "Valid status is required (active, inactive, sold, rented)",
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      objectIds.push(new ObjectId(idString));
+    }
     const result = await db
       .collection("properties")
       .updateMany(
         { _id: { $in: objectIds } },
-        { $set: { status, updatedAt: new Date() } }
+        { $set: { status, updatedAt: new Date() } },
       );
 
     const response: ApiResponse<{ message: string; updatedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties updated successfully`,
-        updatedCount: result.modifiedCount 
+        updatedCount: result.modifiedCount,
       },
     };
 
@@ -1312,38 +1387,59 @@ export const bulkUpdatePropertiesStatus: RequestHandler = async (req, res) => {
 };
 
 // Bulk update properties approval status (admin only)
-export const bulkUpdatePropertiesApproval: RequestHandler = async (req, res) => {
+export const bulkUpdatePropertiesApproval: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const db = getDatabase();
     const { propertyIds, approvalStatus } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    if (!approvalStatus || !['pending', 'approved', 'rejected'].includes(approvalStatus)) {
+    if (
+      !approvalStatus ||
+      !["pending", "approved", "rejected"].includes(approvalStatus)
+    ) {
       return res.status(400).json({
         success: false,
-        error: "Valid approval status is required (pending, approved, rejected)",
+        error:
+          "Valid approval status is required (pending, approved, rejected)",
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      objectIds.push(new ObjectId(idString));
+    }
     const result = await db
       .collection("properties")
       .updateMany(
         { _id: { $in: objectIds } },
-        { $set: { approvalStatus, updatedAt: new Date() } }
+        { $set: { approvalStatus, updatedAt: new Date() } },
       );
 
     const response: ApiResponse<{ message: string; updatedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties approval updated successfully`,
-        updatedCount: result.modifiedCount 
+        updatedCount: result.modifiedCount,
       },
     };
 
@@ -1612,7 +1708,7 @@ export const createTestProperty: RequestHandler = async (req, res) => {
     };
 
     const result = await db.collection("properties").insertOne(testProperty);
-    console.log("✅ Test property created with ID:", result.insertedId);
+    console.log("�� Test property created with ID:", result.insertedId);
 
     // Also create a few more test properties for testing
     const moreTestProperties = [
@@ -1733,7 +1829,7 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     if (req.body.adminComments) {
       updateData.adminComments = req.body.adminComments;
     }
-    
+
     if (approvalStatus === "rejected") {
       if (!req.body.rejectionReason || !req.body.rejectionReason.trim()) {
         return res.status(400).json({
