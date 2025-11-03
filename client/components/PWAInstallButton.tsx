@@ -131,45 +131,48 @@ const PWAInstallButton = () => {
   // Show install button if browser supports PWA installation
   if (showInstallButton || deferredPrompt) {
     return (
-      <div className="fixed bottom-20 left-4 right-4 z-40 md:left-auto md:right-4 md:w-80">
+      <div className="fixed bottom-20 left-4 right-4 z-40 md:left-auto md:right-4 md:w-96">
         <div className="bg-gradient-to-r from-[#C70000] to-[#A50000] text-white rounded-lg shadow-lg p-4 transform transition-all duration-300 hover:scale-105">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
                 <Smartphone className="h-5 w-5 text-white" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-bold">Install App</h3>
-                <p className="text-xs text-red-100">
-                  Add to home screen for better experience
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-bold truncate">
+                  Install Ashish Properties App
+                </h3>
+                <p className="text-xs text-red-100 truncate">
+                  Better experience on mobile
                 </p>
               </div>
             </div>
             <button
               onClick={handleDismiss}
-              className="p-1 hover:bg-white/20 rounded transition-colors"
+              className="p-1 hover:bg-white/20 rounded transition-colors ml-2 shrink-0"
+              aria-label="Dismiss"
             >
               <X className="h-4 w-4 text-white" />
             </button>
           </div>
 
-          <div className="mt-3 flex space-x-2">
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
             <Button
               onClick={handleInstallClick}
               size="sm"
               className="flex-1 bg-white text-[#C70000] hover:bg-gray-100 font-medium"
             >
               <Download className="h-4 w-4 mr-2" />
-              Install PWA
+              <span className="truncate">Install PWA</span>
             </Button>
             <Button
               onClick={handleAPKDownload}
               size="sm"
-              className="bg-white/20 text-white hover:bg-white/30 border-white/30"
+              className="bg-white/20 text-white hover:bg-white/30 border-white/30 flex-1 sm:flex-none"
               variant="outline"
             >
               <FileDown className="h-4 w-4 mr-1" />
-              APK
+              <span>Download APK</span>
             </Button>
             <Button
               onClick={handleDismiss}
@@ -187,33 +190,36 @@ const PWAInstallButton = () => {
 
   // Show general app promotion for browsers that don't support PWA prompts
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-40 md:left-auto md:right-4 md:w-80">
-      <div className="bg-gradient-to-r from-[#C70000] to-[#A50000] text-white rounded-lg shadow-lg p-3 transform transition-all duration-300">
+    <div className="fixed bottom-20 left-4 right-4 z-40 md:left-auto md:right-4 md:w-96">
+      <div className="bg-gradient-to-r from-[#C70000] to-[#A50000] text-white rounded-lg shadow-lg p-4 transform transition-all duration-300 hover:scale-105">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <Smartphone className="h-4 w-4 text-white" />
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+              <Smartphone className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-bold">Install App</h3>
-              <p className="text-xs text-red-100">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm md:text-base font-bold truncate">
+                Install Ashish Properties App
+              </h3>
+              <p className="text-xs text-red-100 truncate">
                 Better experience on mobile
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ml-2 shrink-0">
             <Button
               onClick={handleAPKDownload}
               size="sm"
-              className="bg-white/20 text-white hover:bg-white/30 border-white/30 text-xs px-2 py-1"
+              className="bg-white/20 text-white hover:bg-white/30 border-white/30 text-xs px-3 py-2"
               variant="outline"
             >
-              <FileDown className="h-3 w-3 mr-1" />
-              APK
+              <FileDown className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Download</span> APK
             </Button>
             <button
               onClick={handleDismiss}
               className="p-1 hover:bg-white/20 rounded transition-colors"
+              aria-label="Dismiss"
             >
               <X className="h-4 w-4 text-white" />
             </button>

@@ -241,6 +241,16 @@ import {
   getPaymentMethods,
 } from "./routes/payments";
 
+// Coupon routes
+import {
+  getAllCoupons,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+  validateCoupon,
+  recordCouponUsage,
+} from "./routes/coupons";
+
 // Banner routes
 import {
   getActiveBanners,
@@ -1304,6 +1314,14 @@ app.use("/api/payments/razorpay", requireBuyer, razorpayRoutes);
 
   // Plans route (alias for packages as requested by user)
   app.get("/api/plans", getAdPackages);
+
+  // Coupon routes
+  app.get("/api/admin/coupons", authenticateToken, requireAdmin, getAllCoupons);
+  app.post("/api/admin/coupons", authenticateToken, requireAdmin, createCoupon);
+  app.put("/api/admin/coupons/:id", authenticateToken, requireAdmin, updateCoupon);
+  app.delete("/api/admin/coupons/:id", authenticateToken, requireAdmin, deleteCoupon);
+  app.post("/api/coupons/validate", authenticateToken, validateCoupon);
+  app.post("/api/coupons/record-usage", authenticateToken, recordCouponUsage);
 
   // Payment routes
   // ===================== Payments (generic) =====================
