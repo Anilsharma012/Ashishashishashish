@@ -1284,22 +1284,34 @@ export const permanentDeleteProperties: RequestHandler = async (req, res) => {
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      objectIds.push(new ObjectId(idString));
+    }
+
     const result = await db
       .collection("properties")
       .deleteMany({ _id: { $in: objectIds }, isDeleted: true });
 
     const response: ApiResponse<{ message: string; deletedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.deletedCount} properties permanently deleted`,
-        deletedCount: result.deletedCount 
+        deletedCount: result.deletedCount
       },
     };
 
     res.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error bulk permanently deleting properties:", error);
+    console.error("📋 Error details:", error?.message);
     res.status(500).json({
       success: false,
       error: "Failed to bulk permanently delete properties",
