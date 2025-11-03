@@ -375,10 +375,14 @@ export const api = {
     return { data: response.data };
   },
 
-  delete: async (endpoint: string, token?: string) => {
+  delete: async (endpoint: string, token?: string, data?: any) => {
     const authToken = token ?? getStoredToken();
     const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
-    const response = await apiRequest(endpoint, { method: "DELETE", headers });
+    const response = await apiRequest(endpoint, {
+      method: "DELETE",
+      body: data ? JSON.stringify(data) : undefined,
+      headers,
+    });
     if (!response.ok) {
       const message =
         response.data?.error ||
