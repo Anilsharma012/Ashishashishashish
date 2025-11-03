@@ -408,7 +408,7 @@ export const getAllProperties: RequestHandler = async (req, res) => {
     const filter: any = {};
     // Exclude deleted properties by default
     filter.isDeleted = { $ne: true };
-    
+
     if (status && status !== "all") {
       filter.status = status;
     }
@@ -1010,18 +1010,16 @@ export const deleteProperty: RequestHandler = async (req, res) => {
     const { propertyId } = req.params;
     const adminId = (req as any).user?.userId;
 
-    const result = await db
-      .collection("properties")
-      .updateOne(
-        { _id: new ObjectId(propertyId) },
-        { 
-          $set: { 
-            isDeleted: true, 
-            deletedAt: new Date(),
-            deletedBy: adminId 
-          } 
-        }
-      );
+    const result = await db.collection("properties").updateOne(
+      { _id: new ObjectId(propertyId) },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: adminId,
+        },
+      },
+    );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
@@ -1056,7 +1054,11 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
     console.log("📋 Property IDs:", propertyIds);
     console.log("📋 Admin ID:", adminId);
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       console.error("❌ Invalid propertyIds:", propertyIds);
       return res.status(400).json({
         success: false,
@@ -1085,26 +1087,27 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
       }
     }
 
-    console.log(`✅ Valid ObjectIds created:`, objectIds.map(id => id.toString()));
+    console.log(
+      `✅ Valid ObjectIds created:`,
+      objectIds.map((id) => id.toString()),
+    );
 
-    const result = await db
-      .collection("properties")
-      .updateMany(
-        { _id: { $in: objectIds } },
-        {
-          $set: {
-            isDeleted: true,
-            deletedAt: new Date(),
-            deletedBy: adminId
-          }
-        }
-      );
+    const result = await db.collection("properties").updateMany(
+      { _id: { $in: objectIds } },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: adminId,
+        },
+      },
+    );
 
     const response: ApiResponse<{ message: string; deletedCount: number }> = {
       success: true,
       data: {
         message: `${result.modifiedCount} properties deleted successfully`,
-        deletedCount: result.modifiedCount
+        deletedCount: result.modifiedCount,
       },
     };
 
@@ -1125,7 +1128,7 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
 export const getDeletedProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    
+
     const deletedProperties = await db
       .collection("properties")
       .find({ isDeleted: true })
@@ -1153,15 +1156,13 @@ export const restoreProperty: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyId } = req.params;
 
-    const result = await db
-      .collection("properties")
-      .updateOne(
-        { _id: new ObjectId(propertyId), isDeleted: true },
-        { 
-          $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
-          $set: { updatedAt: new Date() }
-        }
-      );
+    const result = await db.collection("properties").updateOne(
+      { _id: new ObjectId(propertyId), isDeleted: true },
+      {
+        $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
+        $set: { updatedAt: new Date() },
+      },
+    );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
@@ -1191,7 +1192,11 @@ export const restoreProperties: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyIds } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
@@ -1210,21 +1215,19 @@ export const restoreProperties: RequestHandler = async (req, res) => {
       objectIds.push(new ObjectId(idString));
     }
 
-    const result = await db
-      .collection("properties")
-      .updateMany(
-        { _id: { $in: objectIds }, isDeleted: true },
-        {
-          $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
-          $set: { updatedAt: new Date() }
-        }
-      );
+    const result = await db.collection("properties").updateMany(
+      { _id: { $in: objectIds }, isDeleted: true },
+      {
+        $unset: { isDeleted: "", deletedAt: "", deletedBy: "" },
+        $set: { updatedAt: new Date() },
+      },
+    );
 
     const response: ApiResponse<{ message: string; restoredCount: number }> = {
       success: true,
       data: {
         message: `${result.modifiedCount} properties restored successfully`,
-        restoredCount: result.modifiedCount
+        restoredCount: result.modifiedCount,
       },
     };
 
@@ -1277,7 +1280,11 @@ export const permanentDeleteProperties: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyIds } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
@@ -1304,7 +1311,7 @@ export const permanentDeleteProperties: RequestHandler = async (req, res) => {
       success: true,
       data: {
         message: `${result.deletedCount} properties permanently deleted`,
-        deletedCount: result.deletedCount
+        deletedCount: result.deletedCount,
       },
     };
 
@@ -1325,14 +1332,18 @@ export const bulkUpdatePropertiesStatus: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { propertyIds, status } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    if (!status || !['active', 'inactive', 'sold', 'rented'].includes(status)) {
+    if (!status || !["active", "inactive", "sold", "rented"].includes(status)) {
       return res.status(400).json({
         success: false,
         error: "Valid status is required (active, inactive, sold, rented)",
@@ -1354,14 +1365,14 @@ export const bulkUpdatePropertiesStatus: RequestHandler = async (req, res) => {
       .collection("properties")
       .updateMany(
         { _id: { $in: objectIds } },
-        { $set: { status, updatedAt: new Date() } }
+        { $set: { status, updatedAt: new Date() } },
       );
 
     const response: ApiResponse<{ message: string; updatedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties updated successfully`,
-        updatedCount: result.modifiedCount 
+        updatedCount: result.modifiedCount,
       },
     };
 
@@ -1376,22 +1387,33 @@ export const bulkUpdatePropertiesStatus: RequestHandler = async (req, res) => {
 };
 
 // Bulk update properties approval status (admin only)
-export const bulkUpdatePropertiesApproval: RequestHandler = async (req, res) => {
+export const bulkUpdatePropertiesApproval: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const db = getDatabase();
     const { propertyIds, approvalStatus } = req.body;
 
-    if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+    if (
+      !propertyIds ||
+      !Array.isArray(propertyIds) ||
+      propertyIds.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
       });
     }
 
-    if (!approvalStatus || !['pending', 'approved', 'rejected'].includes(approvalStatus)) {
+    if (
+      !approvalStatus ||
+      !["pending", "approved", "rejected"].includes(approvalStatus)
+    ) {
       return res.status(400).json({
         success: false,
-        error: "Valid approval status is required (pending, approved, rejected)",
+        error:
+          "Valid approval status is required (pending, approved, rejected)",
       });
     }
 
@@ -1410,14 +1432,14 @@ export const bulkUpdatePropertiesApproval: RequestHandler = async (req, res) => 
       .collection("properties")
       .updateMany(
         { _id: { $in: objectIds } },
-        { $set: { approvalStatus, updatedAt: new Date() } }
+        { $set: { approvalStatus, updatedAt: new Date() } },
       );
 
     const response: ApiResponse<{ message: string; updatedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties approval updated successfully`,
-        updatedCount: result.modifiedCount 
+        updatedCount: result.modifiedCount,
       },
     };
 
@@ -1807,7 +1829,7 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     if (req.body.adminComments) {
       updateData.adminComments = req.body.adminComments;
     }
-    
+
     if (approvalStatus === "rejected") {
       if (!req.body.rejectionReason || !req.body.rejectionReason.trim()) {
         return res.status(400).json({

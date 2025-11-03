@@ -25,7 +25,10 @@ const detectEnvironment = () => {
 const getApiBaseUrl = () => {
   // 1) Env var preferred
   if (import.meta.env.VITE_API_BASE_URL) {
-    console.log("🔧 Using VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+    console.log(
+      "🔧 Using VITE_API_BASE_URL:",
+      import.meta.env.VITE_API_BASE_URL,
+    );
     return import.meta.env.VITE_API_BASE_URL;
   }
 
@@ -34,7 +37,12 @@ const getApiBaseUrl = () => {
 
   if (typeof window !== "undefined") {
     const { protocol, hostname, port } = window.location;
-    console.log("📍 Current location:", { protocol, hostname, port, href: window.location.href });
+    console.log("📍 Current location:", {
+      protocol,
+      hostname,
+      port,
+      href: window.location.href,
+    });
 
     switch (environment) {
       case "development":
@@ -71,7 +79,8 @@ export const createApiUrl = (endpoint: string): string => {
   console.log("🔗 API Config:", {
     baseUrl: API_CONFIG.baseUrl,
     endpoint: cleanEndpoint,
-    currentLocation: typeof window !== "undefined" ? window.location.href : "server",
+    currentLocation:
+      typeof window !== "undefined" ? window.location.href : "server",
   });
 
   if (API_CONFIG.baseUrl) {
@@ -108,8 +117,13 @@ const getStoredToken = (): string | null => {
       try {
         const u = JSON.parse(userRaw);
         const fromUser =
-          u?.token || u?.accessToken || u?.jwt || u?.data?.token || u?.data?.accessToken;
-        if (typeof fromUser === "string" && fromUser.trim()) return fromUser.trim();
+          u?.token ||
+          u?.accessToken ||
+          u?.jwt ||
+          u?.data?.token ||
+          u?.data?.accessToken;
+        if (typeof fromUser === "string" && fromUser.trim())
+          return fromUser.trim();
       } catch {}
     }
     const cookie = (name: string) =>
@@ -119,9 +133,14 @@ const getStoredToken = (): string | null => {
         .find((c) => c.startsWith(name + "="))
         ?.split("=")[1];
     const fromCookie =
-      cookie("authToken") || cookie("token") || cookie("accessToken") || cookie("jwt");
+      cookie("authToken") ||
+      cookie("token") ||
+      cookie("accessToken") ||
+      cookie("jwt");
     if (fromCookie) {
-      try { localStorage.setItem("token", fromCookie); } catch {}
+      try {
+        localStorage.setItem("token", fromCookie);
+      } catch {}
       return fromCookie;
     }
     return null;
@@ -130,14 +149,11 @@ const getStoredToken = (): string | null => {
   }
 };
 
-
-
-
 // ---------------- core request ----------------
 export const apiRequest = async (
   endpoint: string,
   options: RequestInit = {},
-  retryCount = 0
+  retryCount = 0,
 ): Promise<{ data: any; status: number; ok: boolean }> => {
   const url = createApiUrl(endpoint);
 
@@ -147,7 +163,7 @@ export const apiRequest = async (
 
   if (isBuilderPreview && !API_CONFIG.baseUrl) {
     console.warn(
-      "⚠️ Builder preview without VITE_API_BASE_URL. Using relative /api/* with reduced timeouts."
+      "⚠️ Builder preview without VITE_API_BASE_URL. Using relative /api/* with reduced timeouts.",
     );
   }
 
@@ -157,9 +173,17 @@ export const apiRequest = async (
     ? Math.max(API_CONFIG.timeout, 30000)
     : API_CONFIG.timeout;
 
-  const extendedEndpoints = ["upload", "categories", "subcategories", "create", "delete"];
+  const extendedEndpoints = [
+    "upload",
+    "categories",
+    "subcategories",
+    "create",
+    "delete",
+  ];
   const isExtended = extendedEndpoints.some((k) => endpoint.includes(k));
-  let finalTimeout = isExtended ? Math.max(effectiveTimeout, 45000) : effectiveTimeout;
+  let finalTimeout = isExtended
+    ? Math.max(effectiveTimeout, 45000)
+    : effectiveTimeout;
 
   if (isBuilderPreview && !API_CONFIG.baseUrl) {
     finalTimeout = Math.min(finalTimeout, 8000);
@@ -182,7 +206,9 @@ export const apiRequest = async (
     const defaultHeaders: Record<string, string> = {};
     const hasBody = options.body !== undefined && options.body !== null;
     const bodyIsFormData =
-      hasBody && typeof FormData !== "undefined" && options.body instanceof FormData;
+      hasBody &&
+      typeof FormData !== "undefined" &&
+      options.body instanceof FormData;
 
     if (hasBody && !bodyIsFormData) {
       defaultHeaders["Content-Type"] = "application/json";
@@ -221,7 +247,11 @@ export const apiRequest = async (
     }
 
     if (!response.ok) {
-      console.warn("⚠️ API responded with error", { url, status: response.status, data: responseData });
+      console.warn("⚠️ API responded with error", {
+        url,
+        status: response.status,
+        data: responseData,
+      });
     }
 
     return { data: responseData, status: response.status, ok: response.ok };
@@ -246,7 +276,10 @@ export const apiRequest = async (
       !API_CONFIG.baseUrl;
 
     if (isBuilderPreviewNoApi) {
-      console.warn("⚠️ apiRequest failed in Builder preview (no API base). Returning graceful failure.", error?.message || error);
+      console.warn(
+        "⚠️ apiRequest failed in Builder preview (no API base). Returning graceful failure.",
+        error?.message || error,
+      );
       return { data: null, status: 0, ok: false } as any;
     }
 
@@ -267,7 +300,7 @@ export const adminApi = {
         response.data?.error ||
           response.data?.message ||
           (typeof response.data?.raw === "string" ? response.data.raw : "") ||
-          `HTTP ${response.status}`
+          `HTTP ${response.status}`,
       );
     return response.data;
   },
@@ -282,7 +315,7 @@ export const adminApi = {
         response.data?.error ||
           response.data?.message ||
           (typeof response.data?.raw === "string" ? response.data.raw : "") ||
-          `HTTP ${response.status}`
+          `HTTP ${response.status}`,
       );
     return response.data;
   },
@@ -297,7 +330,7 @@ export const adminApi = {
         response.data?.error ||
           response.data?.message ||
           (typeof response.data?.raw === "string" ? response.data.raw : "") ||
-          `HTTP ${response.status}`
+          `HTTP ${response.status}`,
       );
     return response.data;
   },
@@ -307,7 +340,9 @@ export const adminApi = {
 export const api = {
   get: async (endpoint: string, token?: string) => {
     const authToken = token ?? getStoredToken();
-    const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+    const headers: Record<string, string> = authToken
+      ? { Authorization: `Bearer ${authToken}` }
+      : {};
     try {
       const response = await apiRequest(endpoint, { method: "GET", headers });
       if (!response.ok) {
@@ -318,14 +353,15 @@ export const api = {
             localStorage.removeItem("user");
           } catch {}
           console.warn("api.get: authorization failed, redirecting to /auth");
-          if (typeof window !== "undefined") setTimeout(() => (window.location.href = "/auth"), 300);
+          if (typeof window !== "undefined")
+            setTimeout(() => (window.location.href = "/auth"), 300);
           return { data: null };
         }
         throw new Error(
           response.data?.error ||
             response.data?.message ||
             (typeof response.data?.raw === "string" ? response.data.raw : "") ||
-            `HTTP ${response.status}`
+            `HTTP ${response.status}`,
         );
       }
       return { data: response.data };
@@ -337,7 +373,9 @@ export const api = {
 
   post: async (endpoint: string, data?: any, token?: string) => {
     const authToken = token ?? getStoredToken();
-    const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+    const headers: Record<string, string> = authToken
+      ? { Authorization: `Bearer ${authToken}` }
+      : {};
     const response = await apiRequest(endpoint, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
@@ -359,7 +397,9 @@ export const api = {
 
   put: async (endpoint: string, data?: any, token?: string) => {
     const authToken = token ?? getStoredToken();
-    const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+    const headers: Record<string, string> = authToken
+      ? { Authorization: `Bearer ${authToken}` }
+      : {};
     const response = await apiRequest(endpoint, {
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
@@ -370,14 +410,16 @@ export const api = {
         response.data?.error ||
           response.data?.message ||
           (typeof response.data?.raw === "string" ? response.data.raw : "") ||
-          `HTTP ${response.status}`
+          `HTTP ${response.status}`,
       );
     return { data: response.data };
   },
 
   delete: async (endpoint: string, token?: string, data?: any) => {
     const authToken = token ?? getStoredToken();
-    const headers: Record<string, string> = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+    const headers: Record<string, string> = authToken
+      ? { Authorization: `Bearer ${authToken}` }
+      : {};
     const response = await apiRequest(endpoint, {
       method: "DELETE",
       body: data ? JSON.stringify(data) : undefined,
@@ -400,4 +442,5 @@ export const api = {
 
 // Optional alias
 // @ts-ignore
-(api as any).del = (endpoint: string, token?: string) => (api as any).delete(endpoint, token);
+(api as any).del = (endpoint: string, token?: string) =>
+  (api as any).delete(endpoint, token);
