@@ -531,10 +531,19 @@ export default function EnhancedSellerDashboard() {
       const token = await getAuthToken();
       await api.post(`/seller/properties/${id}/resubmit`, {}, token!);
       await fetchDashboardData();
-      alert("Resubmitted for review.");
+      toast({
+        title: "Property Resubmitted",
+        description: "Your property has been resubmitted for review. Our team will review it shortly.",
+        duration: 5000,
+      });
     } catch (e) {
       console.error("resubmit:", e);
-      alert("Failed to resubmit.");
+      toast({
+        title: "Resubmission Failed",
+        description: "Unable to resubmit the property. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
     }
   };
 
