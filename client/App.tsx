@@ -92,7 +92,6 @@ import PaymentStatus from "./pages/PaymentStatus";
 
 const queryClient = new QueryClient();
 
-import { useWatermark } from "./hooks/useWatermark";
 function App() {
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
@@ -100,7 +99,6 @@ function App() {
     }
   }, []);
 
-  useWatermark();
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

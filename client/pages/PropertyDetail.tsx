@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useWatermark } from "../hooks/useWatermark";
 import Watermark from "../components/Watermark";
+import ImageViewerWithZoom from "../components/ImageViewerWithZoom";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -150,7 +151,7 @@ const notify = (msg: string, type: "success" | "error" = "success") => {
 };
 
 export default function PropertyDetail() {
-  useWatermark();
+  const { settings: watermarkSettings } = useWatermark();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -688,40 +689,18 @@ const handleStartChat = async () => {
           <div className="lg:col-span-2 space-y-6">
             {images.length > 0 && (
               <Card>
-                <CardContent className="p-0">
-                  <div 
-                    className="relative aspect-video overflow-hidden"
-                    onTouchStart={onTouchStart}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={onTouchEnd}
-                  >
-                    <img
-                      src={imgSrc(currentImageIndex)}
-                      alt={property.title}
-                      className="w-full h-full object-cover rounded-t-lg"
-                    />
-                    <Watermark variant="pattern" angle={-45} opacity={0.15} />
-                    {images.length > 1 && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white"
-                          onClick={prevImage}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white"
-                          onClick={nextImage}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                <CardContent className="p-4">
+                  <ImageViewerWithZoom
+                    images={images}
+                    currentIndex={currentImageIndex}
+                    onIndexChange={setCurrentImageIndex}
+                    title={property.title}
+                    watermarkEnabled={watermarkSettings?.enabled ?? true}
+                    watermarkPosition={watermarkSettings?.position ?? "bottom-right"}
+                    watermarkOpacity={watermarkSettings?.opacity ?? 0.8}
+                    watermarkText={watermarkSettings?.text ?? "ashishproperties.in"}
+                    allowDownload={true}
+                  />
                 </CardContent>
               </Card>
             )}

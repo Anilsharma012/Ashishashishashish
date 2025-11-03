@@ -100,6 +100,11 @@ import {
 import osImportRoutes from "./routes/osImport";
 import { getPublicSettings } from "./routes/settings-public";
 import {
+  getWatermarkSettings,
+  updateWatermarkSettings,
+  uploadWatermarkLogo,
+} from "./routes/watermark";
+import {
   updateSiteSettings,
   upsertPageBySlug,
   listPagesAdmin,
@@ -1242,6 +1247,15 @@ app.use("/api/payments/razorpay", requireBuyer, razorpayRoutes);
   );
 
   app.post("/api/admin/initialize", initializeAdmin);
+  
+  // Watermark settings routes (protected)
+  app.get("/api/admin/watermark-settings", authenticateToken, requireAdmin, getWatermarkSettings);
+  app.post("/api/admin/watermark-settings", authenticateToken, requireAdmin, updateWatermarkSettings);
+  app.post("/api/admin/watermark-logo", authenticateToken, requireAdmin, ...uploadWatermarkLogo);
+  
+  // Public watermark settings (read-only, for display)
+  app.get("/api/watermark-settings", getWatermarkSettings);
+  
   app.post(
     "/api/admin/test-property",
     authenticateToken,
