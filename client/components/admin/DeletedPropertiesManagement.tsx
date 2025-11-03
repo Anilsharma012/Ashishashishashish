@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Property } from "../../../shared/types";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
@@ -28,8 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function DeletedPropertiesManagement() {
   const [properties, setProperties] = useState<Property[]>([]);
