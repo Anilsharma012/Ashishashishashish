@@ -1315,7 +1315,17 @@ export const bulkUpdatePropertiesStatus: RequestHandler = async (req, res) => {
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      const idString = String(id);
+      if (!ObjectId.isValid(idString)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${idString}`,
+        });
+      }
+      objectIds.push(new ObjectId(idString));
+    }
     const result = await db
       .collection("properties")
       .updateMany(
