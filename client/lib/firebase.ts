@@ -23,7 +23,8 @@ import {
 } from "firebase/auth";
 import {
   initializeFirestore,
-  enableIndexedDbPersistence,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   type Firestore,
 } from "firebase/firestore";
 
@@ -86,10 +87,13 @@ if (requiredOk) {
     }
   }
 
-  // Firestore: long-polling → fixes 400 Listen in dev/proxies
+  // Firestore: long-polling + persistent cache → fixes 400 Listen in dev/proxies
   dbInstance = initializeFirestore(app, {
     experimentalAutoDetectLongPolling: true,
     experimentalLongPollingOptions: { timeoutSeconds: 30 },
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
   });
 
   if (
@@ -102,18 +106,6 @@ if (requiredOk) {
     } catch (e) {
       console.warn("[FB] Analytics init skipped:", (e as any)?.message || e);
     }
-  }
-
-  if (typeof window !== "undefined" && dbInstance) {
-    enableIndexedDbPersistence(dbInstance).catch((err: any) => {
-      if (err?.code === "failed-precondition") {
-        console.warn("[FB] Persistence off (multiple tabs).");
-      } else if (err?.code === "unimplemented") {
-        console.warn("[FB] Persistence not supported in this browser.");
-      } else {
-        console.warn("[FB] Persistence error:", err?.message || err);
-      }
-    });
   }
 } else {
   console.warn("[FB] Missing required env vars. Firebase features disabled.");

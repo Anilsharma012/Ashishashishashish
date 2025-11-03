@@ -35,7 +35,11 @@ export default defineConfig(({ command }) => {
       strictPort: false, // allow fallback if taken
       // Allow Replit preview/tunnel subdomains
       allowedHosts: [".replit.dev", ".repl.co", "localhost"],
-      hmr: { clientPort: 443 }, // HMR over https
+      hmr: {
+        protocol: "wss",
+        clientPort: 443,
+        host: undefined, // auto-detect
+      },
       cors: true,
     },
 
