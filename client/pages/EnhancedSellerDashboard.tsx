@@ -1325,7 +1325,7 @@ export default function EnhancedSellerDashboard() {
                             </div>
                           ))}
                         </div>
-                        <Button className="w-full bg-[#C70000] hover:bg-[#A60000]">Purchase Package</Button>
+                        <Button className="w-full bg-[#C70000] hover:bg-[#A60000]" onClick={() => navigate("/advertise")}>Purchase Package</Button>
                       </div>
                     ))}
                   </div>
