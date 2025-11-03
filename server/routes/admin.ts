@@ -1109,11 +1109,14 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
     };
 
     res.json(response);
-  } catch (error) {
-    console.error("Error bulk deleting properties:", error);
+  } catch (error: any) {
+    console.error("❌ Error bulk deleting properties:", error);
+    console.error("📋 Error stack:", error?.stack);
+    console.error("📋 Request body:", req.body);
     res.status(500).json({
       success: false,
       error: "Failed to bulk delete properties",
+      details: error?.message,
     });
   }
 };
@@ -1639,7 +1642,7 @@ export const createTestProperty: RequestHandler = async (req, res) => {
     };
 
     const result = await db.collection("properties").insertOne(testProperty);
-    console.log("✅ Test property created with ID:", result.insertedId);
+    console.log("�� Test property created with ID:", result.insertedId);
 
     // Also create a few more test properties for testing
     const moreTestProperties = [
