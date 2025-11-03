@@ -2,6 +2,24 @@
 
 A production-ready full-stack property management application built with React and Express, designed for property listings, chat functionality, and comprehensive user management. The platform supports buyers, sellers, agents, and administrators with role-based access control, real-time messaging, and advanced property search capabilities.
 
+## Recent Changes (November 2025)
+
+### Category-Property Filtering Enhancement
+- Fixed critical category filtering logic in `CategoryProperties.tsx` to properly separate `priceType` (sale/rent) from `propertyType` (residential/commercial/plot)
+- Properties now display correctly in their respective category pages based on URL structure (e.g., /buy/residential/1bhk)
+- Updated filtering to properly map URL parameters to MongoDB query filters
+
+### Image Watermark & Zoom System
+- Implemented comprehensive image viewer with zoom functionality (`ImageViewerWithZoom.tsx`)
+- Added configurable watermark system with three positioning modes (bottom-right, center, pattern)
+- Built admin watermark management panel with logo upload, position control, and opacity settings
+- Created secure backend API routes for watermark configuration:
+  - Public endpoint: `GET /api/watermark-settings` (for display)
+  - Protected admin endpoints: `/api/admin/watermark-settings` (GET/POST) and `/api/admin/watermark-logo` (POST)
+- Implemented download functionality with and without watermark
+- All admin routes protected with `authenticateToken` and `requireAdmin` middleware
+- Dynamic watermark configuration fetched from MongoDB and applied in real-time on property detail pages
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
