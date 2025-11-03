@@ -468,8 +468,12 @@ function CompletePropertyManagement() {
     try {
       const { api } = await import('../../lib/api');
       console.log(`📤 Sending PUT request to: admin/properties/${propertyId}/approval`);
+      const requestBody: any = { approvalStatus: status };
+      if (status === "rejected" && reason) {
+        requestBody.rejectionReason = reason;
+      }
       const response = await api.put(`admin/properties/${propertyId}/approval`,
-        { approvalStatus: status },
+        requestBody,
         token
       );
 
