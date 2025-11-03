@@ -1105,7 +1105,7 @@ export default function EnhancedSellerDashboard() {
                                     <Eye className="h-3 w-3" />
                                   </Button>
                                 </Link>
-                                <Link to={`/edit-property/${id}`}>
+                                <Link to={`/post-property?edit=${id}`}>
                                   <Button size="sm" variant="outline">
                                     <Edit className="h-3 w-3" />
                                   </Button>
