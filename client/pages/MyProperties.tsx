@@ -624,14 +624,23 @@ export default function MyProperties() {
                         </TableCell>
 
                         <TableCell>
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             {getStatusBadge(property.approvalStatus)}
-                            {property.approvalStatus === "rejected" &&
-                              property.rejectionReason && (
-                                <div className="text-xs text-red-600">
-                                  Reason: {property.rejectionReason}
-                                </div>
-                              )}
+                            {property.approvalStatus === "rejected" && (
+                              <>
+                                {property.rejectionReason && (
+                                  <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+                                    <strong>Reason:</strong> {property.rejectionReason}
+                                  </div>
+                                )}
+                                <Link to={`/post-property?edit=${property._id}`}>
+                                  <Button size="sm" variant="outline" className="w-full border-blue-600 text-blue-600 hover:bg-blue-50">
+                                    <Edit className="h-3 w-3 mr-1" />
+                                    Edit & Resubmit
+                                  </Button>
+                                </Link>
+                              </>
+                            )}
                           </div>
                         </TableCell>
 

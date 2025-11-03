@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import PackageSelection from "../components/PackageSelection";
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 import { ROHTAK_AREAS } from "@shared/types";
 import { getRohtakLandmarks } from "../data/rohtakLocations";
+import { api } from "../lib/api";
 
 // ------------------------------
 // Toggle (keep free listing ON as you asked)
@@ -194,6 +196,8 @@ async function getAuthToken(): Promise<string | null> {
 // =====================================================
 export default function PostProperty() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showPackageSelection, setShowPackageSelection] = useState(false);
@@ -202,6 +206,8 @@ export default function PostProperty() {
   const [selectedPackagePrice, setSelectedPackagePrice] = useState(0);
   const [propertyId, setPropertyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editPropertyId, setEditPropertyId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<PropertyFormData>({
     title: "",
@@ -316,6 +322,66 @@ export default function PostProperty() {
       }));
     }
   }, [authLoading, isAuthenticated, user]);
+
+  // ===== Load property data for editing =====
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const editId = searchParams.get('edit');
+    
+    if (editId && isAuthenticated) {
+      setIsEditMode(true);
+      setEditPropertyId(editId);
+      
+      const fetchPropertyData = async () => {
+        try {
+          const token = await getAuthToken();
+          if (!token) return;
+          
+          const response = await api.get(`/properties/${editId}`, token);
+          if (response.data.success && response.data.data) {
+            const property = response.data.data;
+            
+            setFormData({
+              title: property.title || "",
+              description: property.description || "",
+              price: String(property.price || ""),
+              priceType: property.priceType || "sale",
+              propertyType: property.propertyType || "",
+              subCategory: property.subCategory || "",
+              location: {
+                area: property.location?.area || "",
+                address: property.location?.address || "",
+                landmark: property.location?.landmark || "",
+              },
+              specifications: {
+                bedrooms: String(property.specifications?.bedrooms || ""),
+                bathrooms: String(property.specifications?.bathrooms || ""),
+                area: String(property.specifications?.area || ""),
+                facing: property.specifications?.facing || "",
+                floor: String(property.specifications?.floor || ""),
+                totalFloors: String(property.specifications?.totalFloors || ""),
+                parking: property.specifications?.parking || "",
+                furnished: property.specifications?.furnished || "",
+              },
+              amenities: property.amenities || [],
+              images: [],
+              contactInfo: {
+                name: property.contactInfo?.name || user?.name || "",
+                phone: property.contactInfo?.phone || user?.phone || "",
+                email: property.contactInfo?.email || user?.email || "",
+                alternativePhone: property.contactInfo?.alternativePhone || "",
+                whatsappNumber: property.contactInfo?.whatsappNumber || "",
+              },
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching property for edit:", error);
+        }
+      };
+      
+      fetchPropertyData();
+    }
+  }, [location.search, isAuthenticated, user]);
 
   // Handlers
   const handleInputChange = (field: string, value: string) => {
@@ -523,12 +589,25 @@ export default function PostProperty() {
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const response = await fetch("/api/properties", {
-        method: "POST",
-        headers,
-        body: submitData,
-        credentials: "include",
-      });
+      let response;
+      
+      if (isEditMode && editPropertyId) {
+        // Update existing property
+        response = await fetch(`/api/properties/${editPropertyId}`, {
+          method: "PUT",
+          headers,
+          body: submitData,
+          credentials: "include",
+        });
+      } else {
+        // Create new property
+        response = await fetch("/api/properties", {
+          method: "POST",
+          headers,
+          body: submitData,
+          credentials: "include",
+        });
+      }
 
       if (!response.ok) {
         try {
@@ -555,7 +634,39 @@ export default function PostProperty() {
       const data = await response.json();
 
       if (data.success) {
-        setPropertyId(data.data._id);
+        setPropertyId(data.data._id || editPropertyId);
+
+        // If editing a rejected property, call resubmit endpoint
+        if (isEditMode && editPropertyId) {
+          try {
+            const resubmitResponse = await api.post(
+              `/seller/properties/${editPropertyId}/resubmit`,
+              {},
+              token!
+            );
+            
+            if (resubmitResponse.data.success) {
+              try {
+                localStorage.removeItem("post_property_draft");
+              } catch {}
+              try {
+                window.dispatchEvent(new Event("properties:updated"));
+              } catch {}
+              alert(
+                "✅ Property updated and resubmitted successfully!\n\n⏳ Status: Pending Admin Review\n\n" +
+                "Your property will be reviewed by our team."
+              );
+              navigate("/my-properties");
+            } else {
+              alert(resubmitResponse.data.error || "Failed to resubmit property");
+            }
+          } catch (error) {
+            console.error("Error resubmitting property:", error);
+            alert("Property updated but failed to resubmit. Please try resubmitting from My Properties page.");
+            navigate("/my-properties");
+          }
+          return;
+        }
 
         if (withPackage) {
           // Go to package selection → then PaymentForm
