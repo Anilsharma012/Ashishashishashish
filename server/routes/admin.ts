@@ -1059,25 +1059,35 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
       });
     }
 
-    const objectIds = propertyIds.map(id => new ObjectId(id));
+    const objectIds: ObjectId[] = [];
+    for (const id of propertyIds) {
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid property ID format: ${id}`,
+        });
+      }
+      objectIds.push(new ObjectId(id));
+    }
+
     const result = await db
       .collection("properties")
       .updateMany(
         { _id: { $in: objectIds } },
-        { 
-          $set: { 
-            isDeleted: true, 
+        {
+          $set: {
+            isDeleted: true,
             deletedAt: new Date(),
-            deletedBy: adminId 
-          } 
+            deletedBy: adminId
+          }
         }
       );
 
     const response: ApiResponse<{ message: string; deletedCount: number }> = {
       success: true,
-      data: { 
+      data: {
         message: `${result.modifiedCount} properties deleted successfully`,
-        deletedCount: result.modifiedCount 
+        deletedCount: result.modifiedCount
       },
     };
 
