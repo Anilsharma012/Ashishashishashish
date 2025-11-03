@@ -1052,7 +1052,12 @@ export const bulkDeleteProperties: RequestHandler = async (req, res) => {
     const { propertyIds } = req.body;
     const adminId = (req as any).user?.userId;
 
+    console.log("🗑️ Bulk delete request received");
+    console.log("📋 Property IDs:", propertyIds);
+    console.log("📋 Admin ID:", adminId);
+
     if (!propertyIds || !Array.isArray(propertyIds) || propertyIds.length === 0) {
+      console.error("❌ Invalid propertyIds:", propertyIds);
       return res.status(400).json({
         success: false,
         error: "Property IDs array is required",
