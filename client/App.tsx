@@ -89,6 +89,8 @@ import DynamicPage from "./pages/DynamicPage";
 import AdminSubcategoriesPage from "./pages/AdminSubcategoriesPage";
 import Checkout from "./pages/Checkout";
 import PaymentStatus from "./pages/PaymentStatus";
+import PWAInstallButton from "./components/PWAInstallButton";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +110,8 @@ function App() {
               <Toaster />
               <Sonner />
               <NetworkStatus />
+              <PWAInstallPrompt />
+              <PWAInstallButton />
               <AdsenseProvider />
               <BrowserRouter>
                 <TitleSync />

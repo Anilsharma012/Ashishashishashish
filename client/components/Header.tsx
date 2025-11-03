@@ -15,6 +15,7 @@ import {
 } from "../data/rohtakLocations";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotificationsUnread } from "@/hooks/useNotificationsUnread";
 
 /* ---------- local favorites (logged-out fallback) ---------- */
 const getLocalFavIds = (): string[] => {
@@ -34,6 +35,7 @@ export default function Header() {
 
   const { token } = useAuth();
   const [wishlistCount, setWishlistCount] = useState<number>(0);
+  const notificationCount = useNotificationsUnread();
   const loc = useLocation();
   const loadingRef = useRef(false);
 
@@ -157,9 +159,21 @@ export default function Header() {
           </Link>
 
           {/* 🔔 Notifications */}
-          <button className="p-2 bg-white/20 rounded-lg" aria-label="Notifications">
-            <Bell className="h-5 w-5" />
-          </button>
+          <Link
+            to="/user-dashboard?tab=notifications"
+            className="p-2 bg-white/20 rounded-lg relative z-20 pointer-events-auto"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <div className="relative">
+              <Bell className="h-5 w-5" />
+              {notificationCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1.5 rounded-full bg-yellow-400 text-gray-900 text-[10px] leading-[18px] text-center font-bold animate-pulse">
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </span>
+              )}
+            </div>
+          </Link>
 
           {/* Mobile menu toggle */}
           <button

@@ -34,6 +34,7 @@ import EnquiryModal from "../components/EnquiryModal";
 import PropertyReviews from "../components/PropertyReviews";
 import ReviewsList from "../components/ReviewsList";
 import ReviewForm from "../components/ReviewForm";
+import LocationMap from "../components/LocationMap";
 import { useAuth } from "../hooks/useAuth";
 
 /* ---------------- UI helpers ---------------- */
@@ -933,7 +934,27 @@ const handleStartChat = async () => {
                     </div>
                   </>
                 )}
+              </CardContent>
+            </Card>
 
+            {/* Location Map - Only show if location data exists */}
+            {(property.location?.address || property.location?.city || property.location?.sector || property.location?.colony) && (
+              <Card>
+                <CardContent className="p-4">
+                  <LocationMap
+                    address={property.location?.address}
+                    city={property.location?.city}
+                    state={property.location?.state}
+                    sector={property.location?.sector}
+                    colony={property.location?.colony}
+                    landmark={property.location?.landmark}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardContent>
                 {/* Reviews */}
                 <div className="mt-6">
                   <PropertyReviews propertyId={property._id} />
