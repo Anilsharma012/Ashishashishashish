@@ -42,6 +42,8 @@ export interface Property {
   approvalStatus: "pending" | "approved" | "rejected";
   adminComments?: string;
   rejectionReason?: string;
+  rejectionRegion?: string; // Category of issue that caused rejection
+  rejectedAt?: Date;
   approvedAt?: Date;
   approvedBy?: string; // admin user ID
   featured: boolean;
