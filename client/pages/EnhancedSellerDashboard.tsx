@@ -82,7 +82,12 @@ interface Notification {
   propertyTitle?: string;
   conversationId?: string | null;
   unreadCount?: number;
-  source?: "admin_notification" | "user_notification" | "conversation" | "direct_message" | string;
+  source?:
+    | "admin_notification"
+    | "user_notification"
+    | "conversation"
+    | "direct_message"
+    | string;
 }
 
 interface Message {
@@ -142,7 +147,8 @@ async function getAuthToken(): Promise<string | null> {
   try {
     // @ts-ignore
     const fbAuth = (window as any)?.firebaseAuth || undefined;
-    if (fbAuth?.currentUser?.getIdToken) token = await fbAuth.currentUser.getIdToken(true);
+    if (fbAuth?.currentUser?.getIdToken)
+      token = await fbAuth.currentUser.getIdToken(true);
   } catch {}
   return token;
 }
@@ -213,7 +219,10 @@ export default function EnhancedSellerDashboard() {
       const res = await api.post("/seller/messages", body, token);
       if (res?.data?.success) {
         toast.success("Reply sent successfully");
-        const newConversationId = res.data?.data?.conversationId as string | null | undefined;
+        const newConversationId = res.data?.data?.conversationId as
+          | string
+          | null
+          | undefined;
         closeReplyModal();
         await fetchDashboardData();
         if (newConversationId) navigate(`/conversation/${newConversationId}`);
@@ -228,19 +237,26 @@ export default function EnhancedSellerDashboard() {
 
   // Filters for properties
   const [propSearch, setPropSearch] = useState("");
-  const [propStatus, setPropStatus] =
-    useState<"all" | "pending" | "approved" | "rejected">(() => {
-      // Initialize from URL parameter
-      const urlParams = new URLSearchParams(window.location.search);
-      const tabParam = urlParams.get("filter");
-      if (tabParam === "pending" || tabParam === "approved" || tabParam === "rejected") {
-        return tabParam;
-      }
-      return "all";
-    });
+  const [propStatus, setPropStatus] = useState<
+    "all" | "pending" | "approved" | "rejected"
+  >(() => {
+    // Initialize from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get("filter");
+    if (
+      tabParam === "pending" ||
+      tabParam === "approved" ||
+      tabParam === "rejected"
+    ) {
+      return tabParam;
+    }
+    return "all";
+  });
 
   // Handler for clicking KPI cards to filter
-  const handleKPIFilter = (filter: "all" | "pending" | "approved" | "rejected") => {
+  const handleKPIFilter = (
+    filter: "all" | "pending" | "approved" | "rejected",
+  ) => {
     setPropStatus(filter);
     setActiveTab("properties"); // Switch to properties tab
     // Update URL
@@ -257,7 +273,12 @@ export default function EnhancedSellerDashboard() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const filterParam = urlParams.get("filter");
-    if (filterParam && (filterParam === "pending" || filterParam === "approved" || filterParam === "rejected")) {
+    if (
+      filterParam &&
+      (filterParam === "pending" ||
+        filterParam === "approved" ||
+        filterParam === "rejected")
+    ) {
       setActiveTab("properties");
     }
   }, []);
@@ -267,7 +288,11 @@ export default function EnhancedSellerDashboard() {
     const handlePopState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const filterParam = urlParams.get("filter");
-      if (filterParam === "pending" || filterParam === "approved" || filterParam === "rejected") {
+      if (
+        filterParam === "pending" ||
+        filterParam === "approved" ||
+        filterParam === "rejected"
+      ) {
         setPropStatus(filterParam);
         setActiveTab("properties");
       } else {
@@ -324,7 +349,8 @@ export default function EnhancedSellerDashboard() {
     void fetchDashboardData();
     const handler = () => fetchDashboardData();
     window.addEventListener("properties:updated", handler as any);
-    return () => window.removeEventListener("properties:updated", handler as any);
+    return () =>
+      window.removeEventListener("properties:updated", handler as any);
   }, [user, navigate]);
 
   // --------------------------------------------------
@@ -343,7 +369,9 @@ export default function EnhancedSellerDashboard() {
       }
 
       try {
-        const es = new EventSource(`/api/seller/stream?token=${encodeURIComponent(token)}`);
+        const es = new EventSource(
+          `/api/seller/stream?token=${encodeURIComponent(token)}`,
+        );
         sseRef.current = es;
 
         es.addEventListener("error", () => {
@@ -394,17 +422,24 @@ export default function EnhancedSellerDashboard() {
         return;
       }
 
-      const [propertiesRes, notificationsRes, messagesRes, packagesRes, paymentsRes] =
-        await Promise.all([
-          api.get("/seller/properties", token),
-          api.get("/seller/notifications", token),
-          api.get("/seller/messages", token),
-          api.get("/seller/packages", token),
-          api.get("/seller/payments", token),
-        ]);
+      const [
+        propertiesRes,
+        notificationsRes,
+        messagesRes,
+        packagesRes,
+        paymentsRes,
+      ] = await Promise.all([
+        api.get("/seller/properties", token),
+        api.get("/seller/notifications", token),
+        api.get("/seller/messages", token),
+        api.get("/seller/packages", token),
+        api.get("/seller/payments", token),
+      ]);
 
-      if (propertiesRes?.data?.success) setProperties(propertiesRes.data.data || []);
-      if (notificationsRes?.data?.success) setNotifications(notificationsRes.data.data || []);
+      if (propertiesRes?.data?.success)
+        setProperties(propertiesRes.data.data || []);
+      if (notificationsRes?.data?.success)
+        setNotifications(notificationsRes.data.data || []);
       if (messagesRes?.data?.success) setMessages(messagesRes.data.data || []);
       if (packagesRes?.data?.success) setPackages(packagesRes.data.data || []);
       if (paymentsRes?.data?.success) setPayments(paymentsRes.data.data || []);
@@ -412,9 +447,15 @@ export default function EnhancedSellerDashboard() {
       console.error("Dashboard load failed:", err);
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         alert("Your session has expired. Please login again.");
-        ["token", "authToken", "accessToken", "userToken", "adminToken", "user", "adminUser"].forEach(
-          (k) => localStorage.removeItem(k)
-        );
+        [
+          "token",
+          "authToken",
+          "accessToken",
+          "userToken",
+          "adminToken",
+          "user",
+          "adminUser",
+        ].forEach((k) => localStorage.removeItem(k));
         navigate("/auth", { replace: true });
         return;
       }
@@ -429,15 +470,21 @@ export default function EnhancedSellerDashboard() {
   // --------------------------------------------------
   useEffect(() => {
     const totalViews = properties.reduce((sum, p) => sum + (p.views || 0), 0);
-    const totalInquiries = properties.reduce((sum, p) => sum + (p.inquiries || 0), 0);
+    const totalInquiries = properties.reduce(
+      (sum, p) => sum + (p.inquiries || 0),
+      0,
+    );
     const unreadNotifications = notifications.filter((n) => !n.isRead).length;
     const unreadMessages = messages.filter((m) => !m.isRead).length;
 
     setStats({
       totalProperties: properties.length,
-      pendingApproval: properties.filter((p) => p.approvalStatus === "pending").length,
-      approved: properties.filter((p) => p.approvalStatus === "approved").length,
-      rejected: properties.filter((p) => p.approvalStatus === "rejected").length,
+      pendingApproval: properties.filter((p) => p.approvalStatus === "pending")
+        .length,
+      approved: properties.filter((p) => p.approvalStatus === "approved")
+        .length,
+      rejected: properties.filter((p) => p.approvalStatus === "rejected")
+        .length,
       totalViews,
       totalInquiries,
       unreadNotifications,
@@ -458,24 +505,36 @@ export default function EnhancedSellerDashboard() {
         ns.map((n) => {
           const id = (n as any)._id || (n as any).id;
           return id === notificationId ? { ...n, isRead: true } : n;
-        })
+        }),
       );
     } catch (e) {
       console.error("markNotificationAsRead:", e);
     }
   };
 
-  const deleteNotification = async (notificationId: string, source?: string) => {
+  const deleteNotification = async (
+    notificationId: string,
+    source?: string,
+  ) => {
     const prev = notifications;
-    setNotifications((ns) => ns.filter((n) => ((n as any)._id || (n as any).id) !== notificationId));
+    setNotifications((ns) =>
+      ns.filter((n) => ((n as any)._id || (n as any).id) !== notificationId),
+    );
 
     const token = await getAuthToken();
     try {
-      await api.delete(`/seller/notifications/${encodeURIComponent(notificationId)}`, token!);
+      await api.delete(
+        `/seller/notifications/${encodeURIComponent(notificationId)}`,
+        token!,
+      );
       return;
     } catch (err: any) {
       try {
-        await api.post(`/seller/notifications/${encodeURIComponent(notificationId)}/delete`, { source }, token!);
+        await api.post(
+          `/seller/notifications/${encodeURIComponent(notificationId)}/delete`,
+          { source },
+          token!,
+        );
         return;
       } catch (e2) {
         console.warn("Delete fallback failed:", e2);
@@ -499,7 +558,7 @@ export default function EnhancedSellerDashboard() {
       const res = await api.post(
         "/conversations/find-or-create",
         { propertyId: n.propertyId },
-        token!
+        token!,
       );
       const newId =
         (res as any)?.data?.data?._id ||
@@ -519,9 +578,11 @@ export default function EnhancedSellerDashboard() {
     try {
       const token = await getAuthToken();
       await api.delete(`/seller/properties/${id}`, token!);
-      setProperties((ps) => ps.filter((p: any) => (p._id || (p as any).id) !== id));
+      setProperties((ps) =>
+        ps.filter((p: any) => (p._id || (p as any).id) !== id),
+      );
     } catch (e) {
-    console.error("delete property:", e);
+      console.error("delete property:", e);
       alert("Failed to delete property.");
     }
   };
@@ -531,10 +592,20 @@ export default function EnhancedSellerDashboard() {
       const token = await getAuthToken();
       await api.post(`/seller/properties/${id}/resubmit`, {}, token!);
       await fetchDashboardData();
-      alert("Resubmitted for review.");
+      toast({
+        title: "Property Resubmitted",
+        description:
+          "Your property has been resubmitted for review. Our team will review it shortly.",
+        duration: 5000,
+      });
     } catch (e) {
       console.error("resubmit:", e);
-      alert("Failed to resubmit.");
+      toast({
+        title: "Resubmission Failed",
+        description: "Unable to resubmit the property. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
     }
   };
 
@@ -586,11 +657,14 @@ export default function EnhancedSellerDashboard() {
 
   const filteredProperties = useMemo(() => {
     let list = properties.slice();
-    if (propStatus !== "all") list = list.filter((p) => p.approvalStatus === propStatus);
+    if (propStatus !== "all")
+      list = list.filter((p) => p.approvalStatus === propStatus);
     if (propSearch.trim()) {
       const q = propSearch.toLowerCase();
       list = list.filter(
-        (p) => p.title.toLowerCase().includes(q) || p.location?.address?.toLowerCase?.().includes(q)
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.location?.address?.toLowerCase?.().includes(q),
       );
     }
     return list;
@@ -632,11 +706,13 @@ export default function EnhancedSellerDashboard() {
         {/* Header (mobile-friendly, no overlap) */}
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900 truncate">Seller Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900 truncate">
+              Seller Dashboard
+            </h1>
             <p className="text-gray-600">Welcome back, {user?.name}!</p>
           </div>
 
-        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
             <div className="relative">
               <Button
                 variant="outline"
@@ -653,13 +729,23 @@ export default function EnhancedSellerDashboard() {
               )}
             </div>
 
-            <Button onClick={fetchDashboardData} variant="outline" size="sm" className="w-full md:w-auto">
+            <Button
+              onClick={fetchDashboardData}
+              variant="outline"
+              size="sm"
+              className="w-full md:w-auto"
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
 
             {/* CHANGED: open confirm dialog instead of direct logout */}
-            <Button onClick={() => setLogoutOpen(true)} variant="outline" size="sm" className="w-full md:w-auto">
+            <Button
+              onClick={() => setLogoutOpen(true)}
+              variant="outline"
+              size="sm"
+              className="w-full md:w-auto"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -674,7 +760,7 @@ export default function EnhancedSellerDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => handleKPIFilter("all")}
           >
@@ -687,7 +773,7 @@ export default function EnhancedSellerDashboard() {
             </CardContent>
           </Card>
 
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => handleKPIFilter("pending")}
           >
@@ -696,11 +782,13 @@ export default function EnhancedSellerDashboard() {
               <Clock className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{stats.pendingApproval}</div>
+              <div className="text-2xl font-bold text-yellow-600">
+                {stats.pendingApproval}
+              </div>
             </CardContent>
           </Card>
 
-          <Card 
+          <Card
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => handleKPIFilter("approved")}
           >
@@ -709,7 +797,9 @@ export default function EnhancedSellerDashboard() {
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.approved}
+              </div>
             </CardContent>
           </Card>
 
@@ -719,7 +809,9 @@ export default function EnhancedSellerDashboard() {
               <Eye className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.totalViews}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.totalViews}
+              </div>
             </CardContent>
           </Card>
 
@@ -729,17 +821,23 @@ export default function EnhancedSellerDashboard() {
               <MessageSquare className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{stats.unreadMessages}</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {stats.unreadMessages}
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Profile Views
+              </CardTitle>
               <Crown className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-indigo-600">{stats.profileViews}</div>
+              <div className="text-2xl font-bold text-indigo-600">
+                {stats.profileViews}
+              </div>
             </CardContent>
           </Card>
 
@@ -749,7 +847,9 @@ export default function EnhancedSellerDashboard() {
               <Crown className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{stats.premiumListings}</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {stats.premiumListings}
+              </div>
             </CardContent>
           </Card>
 
@@ -759,7 +859,9 @@ export default function EnhancedSellerDashboard() {
               <TrendingUp className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.totalInquiries}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.totalInquiries}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -768,40 +870,71 @@ export default function EnhancedSellerDashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* FIXED: no horizontal scroll; proper chips in 2 rows on mobile */}
           <div className="mb-3">
-              <TabsList
-      className="
+            <TabsList
+              className="
         block w-full h-auto rounded-md bg-muted p-1
       "
-    >
-      <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-        <TabsTrigger value="overview"     className="w-full py-2 text-xs sm:text-sm justify-center">Overview</TabsTrigger>
+            >
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                <TabsTrigger
+                  value="overview"
+                  className="w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  Overview
+                </TabsTrigger>
 
-        <TabsTrigger value="notifications" className="relative w-full py-2 text-xs sm:text-sm justify-center">
-          Notifications
-          {stats.unreadNotifications > 0 && (
-            <Badge className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 text-[10px] leading-4 rounded-full bg-red-500 text-white">
-              {stats.unreadNotifications}
-            </Badge>
-          )}
-        </TabsTrigger>
+                <TabsTrigger
+                  value="notifications"
+                  className="relative w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  Notifications
+                  {stats.unreadNotifications > 0 && (
+                    <Badge className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 text-[10px] leading-4 rounded-full bg-red-500 text-white">
+                      {stats.unreadNotifications}
+                    </Badge>
+                  )}
+                </TabsTrigger>
 
-        <TabsTrigger value="properties"   className="w-full py-2 text-xs sm:text-sm justify-center">My Properties</TabsTrigger>
-        <TabsTrigger value="messages"     className="relative w-full py-2 text-xs sm:text-sm justify-center">
-          Messages
-          {stats.unreadMessages > 0 && (
-            <Badge className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 text-[10px] leading-4 rounded-full bg-red-500 text-white">
-              {stats.unreadMessages}
-            </Badge>
-          )}
-        </TabsTrigger>
+                <TabsTrigger
+                  value="properties"
+                  className="w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  My Properties
+                </TabsTrigger>
+                <TabsTrigger
+                  value="messages"
+                  className="relative w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  Messages
+                  {stats.unreadMessages > 0 && (
+                    <Badge className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 text-[10px] leading-4 rounded-full bg-red-500 text-white">
+                      {stats.unreadMessages}
+                    </Badge>
+                  )}
+                </TabsTrigger>
 
-        {/* 2nd row */}
-        <TabsTrigger value="insights"     className="w-full py-2 text-xs sm:text-sm justify-center">Insights</TabsTrigger>
-        <TabsTrigger value="payments"     className="w-full py-2 text-xs sm:text-sm justify-center">Payments</TabsTrigger>
-        <TabsTrigger value="settings"     className="w-full py-2 text-xs sm:text-sm justify-center">Settings</TabsTrigger>
-        {/* <TabsTrigger value="blog" className="w-full py-2 text-xs sm:text-sm justify-center">Blog</TabsTrigger> */}
-      </div>
-    </TabsList>
+                {/* 2nd row */}
+                <TabsTrigger
+                  value="insights"
+                  className="w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  Insights
+                </TabsTrigger>
+                <TabsTrigger
+                  value="payments"
+                  className="w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  Payments
+                </TabsTrigger>
+                <TabsTrigger
+                  value="settings"
+                  className="w-full py-2 text-xs sm:text-sm justify-center"
+                >
+                  Settings
+                </TabsTrigger>
+                {/* <TabsTrigger value="blog" className="w-full py-2 text-xs sm:text-sm justify-center">Blog</TabsTrigger> */}
+              </div>
+            </TabsList>
           </div>
 
           {/* Overview */}
@@ -817,13 +950,26 @@ export default function EnhancedSellerDashboard() {
                       <Plus className="h-4 w-4 mr-2" /> Post New Property
                     </Button>
                   </Link>
-                  <Button variant="outline" className="w-full" onClick={() => setActiveTab("properties")}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setActiveTab("properties")}
+                  >
                     <Home className="h-4 w-4 mr-2" /> Manage Properties
                   </Button>
-                  <Button variant="outline" className="w-full" onClick={() => setActiveTab("messages")}>
-                    <MessageSquare className="h-4 w-4 mr-2" /> View Messages ({stats.unreadMessages})
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setActiveTab("messages")}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" /> View Messages (
+                    {stats.unreadMessages})
                   </Button>
-                  <Button variant="outline" className="w-full" onClick={() => setActiveTab("payments")}>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setActiveTab("payments")}
+                  >
                     <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                   </Button>
                 </div>
@@ -833,7 +979,11 @@ export default function EnhancedSellerDashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Recent Properties</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => setActiveTab("properties")}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("properties")}
+                >
                   View All
                 </Button>
               </CardHeader>
@@ -841,10 +991,13 @@ export default function EnhancedSellerDashboard() {
                 {properties.length === 0 ? (
                   <div className="text-center py-8">
                     <Home className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-500 mb-4">You haven't posted any properties yet</p>
+                    <p className="text-gray-500 mb-4">
+                      You haven't posted any properties yet
+                    </p>
                     <Link to="/post-property">
                       <Button className="bg-[#C70000] hover:bg-[#A60000] text-white">
-                        <Plus className="h-4 w-4 mr-2" /> Post Your First Property
+                        <Plus className="h-4 w-4 mr-2" /> Post Your First
+                        Property
                       </Button>
                     </Link>
                   </div>
@@ -852,12 +1005,16 @@ export default function EnhancedSellerDashboard() {
                   <div className="space-y-4">
                     {properties.slice(0, 3).map((property: any, idx) => (
                       <div
-                        key={property._id || property.id || property.title || idx}
+                        key={
+                          property._id || property.id || property.title || idx
+                        }
                         className="border border-gray-200 rounded-lg p-4"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h3 className="font-medium text-gray-900">{property.title}</h3>
+                            <h3 className="font-medium text-gray-900">
+                              {property.title}
+                            </h3>
                             <p className="text-sm text-gray-500 mt-1">
                               <MapPin className="inline h-3 w-3 mr-1" />
                               {property.location?.address}
@@ -922,15 +1079,21 @@ export default function EnhancedSellerDashboard() {
                         <div
                           key={id || n.title || idx}
                           className={`border rounded-lg p-4 transition-all duration-200 ${
-                            n.isRead ? "bg-gray-50" : "bg-blue-50 border-blue-200"
+                            n.isRead
+                              ? "bg-gray-50"
+                              : "bg-blue-50 border-blue-200"
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start space-x-3 flex-1">
                               {getNotificationIcon(n.type)}
                               <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">{n.title}</h4>
-                                <p className="text-sm text-gray-600 mt-1">{n.message}</p>
+                                <h4 className="font-medium text-gray-900">
+                                  {n.title}
+                                </h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {n.message}
+                                </p>
                                 <p className="text-xs text-gray-400 mt-2">
                                   {new Date(n.createdAt).toLocaleString()}
                                 </p>
@@ -939,7 +1102,11 @@ export default function EnhancedSellerDashboard() {
 
                             <div className="flex items-center space-x-2">
                               {(n.conversationId || n.propertyId) && (
-                                <Button size="sm" variant="outline" onClick={() => openChatFromNotification(n)}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openChatFromNotification(n)}
+                                >
                                   Open Chat
                                 </Button>
                               )}
@@ -949,7 +1116,10 @@ export default function EnhancedSellerDashboard() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    if (!id) return toast.error("Notification id missing");
+                                    if (!id)
+                                      return toast.error(
+                                        "Notification id missing",
+                                      );
                                     markNotificationAsRead(id);
                                   }}
                                 >
@@ -961,7 +1131,10 @@ export default function EnhancedSellerDashboard() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
-                                  if (!id) return toast.error("Notification id missing");
+                                  if (!id)
+                                    return toast.error(
+                                      "Notification id missing",
+                                    );
                                   deleteNotification(id, n.source);
                                 }}
                               >
@@ -1042,12 +1215,24 @@ export default function EnhancedSellerDashboard() {
                       {filteredProperties.map((property: any, idx) => {
                         const id = property._id || property.id;
                         return (
-                          <TableRow key={id || property.title || idx}>
+                          <TableRow
+                            key={id || property.title || idx}
+                            className={
+                              property.approvalStatus === "rejected"
+                                ? "bg-red-50"
+                                : ""
+                            }
+                          >
                             <TableCell>
                               <div>
-                                <div className="font-medium">{property.title}</div>
+                                <div className="font-medium">
+                                  {property.title}
+                                </div>
                                 <div className="text-sm text-gray-500">
-                                  Posted {new Date(property.createdAt).toLocaleDateString()}
+                                  Posted{" "}
+                                  {new Date(
+                                    property.createdAt,
+                                  ).toLocaleDateString()}
                                 </div>
                               </div>
                             </TableCell>
@@ -1057,13 +1242,33 @@ export default function EnhancedSellerDashboard() {
                               </span>
                             </TableCell>
                             <TableCell>
-                              <div className="text-sm">{property.location?.address}</div>
+                              <div className="text-sm">
+                                {property.location?.address}
+                              </div>
                             </TableCell>
                             <TableCell>
-                              {getStatusBadge(property.approvalStatus)}
-                              {property.approvalStatus === "rejected" && property.rejectionReason && (
-                                <p className="text-xs text-red-600 mt-1">Reason: {property.rejectionReason}</p>
-                              )}
+                              <div>
+                                {getStatusBadge(property.approvalStatus)}
+                                {property.approvalStatus === "rejected" && (
+                                  <div className="bg-red-50 border border-red-200 rounded p-2 mt-2">
+                                    {property.rejectionReason && (
+                                      <div>
+                                        <p className="text-xs font-semibold text-red-800 mb-1">
+                                          Rejection Reason:
+                                        </p>
+                                        <p className="text-xs text-red-700">
+                                          {property.rejectionReason}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {!property.rejectionReason && (
+                                      <p className="text-xs text-red-700">
+                                        Property rejected by admin
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center space-x-1">
@@ -1084,16 +1289,25 @@ export default function EnhancedSellerDashboard() {
                                     <Eye className="h-3 w-3" />
                                   </Button>
                                 </Link>
-                                <Link to={`/edit-property/${id}`}>
+                                <Link to={`/post-property?edit=${id}`}>
                                   <Button size="sm" variant="outline">
                                     <Edit className="h-3 w-3" />
                                   </Button>
                                 </Link>
-                                <Button size="sm" variant="outline" onClick={() => handleDeleteProperty(id)}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteProperty(id)}
+                                >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
                                 {property.approvalStatus === "rejected" && (
-                                  <Button size="sm" variant="outline" onClick={() => handleResubmit(id)}>
+                                  <Button
+                                    size="sm"
+                                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                                    onClick={() => handleResubmit(id)}
+                                    title="Click to resubmit this property for review. You can edit the property before resubmitting."
+                                  >
                                     Resubmit
                                   </Button>
                                 )}
@@ -1123,7 +1337,9 @@ export default function EnhancedSellerDashboard() {
                   <MessageSquare className="h-5 w-5" />
                   <span>Messages Center</span>
                   {stats.unreadMessages > 0 && (
-                    <Badge className="bg-red-500 text-white">{stats.unreadMessages} unread</Badge>
+                    <Badge className="bg-red-500 text-white">
+                      {stats.unreadMessages} unread
+                    </Badge>
                   )}
                 </CardTitle>
               </CardHeader>
@@ -1145,7 +1361,9 @@ export default function EnhancedSellerDashboard() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
-                              <h4 className="font-medium text-gray-900">{m.buyerName}</h4>
+                              <h4 className="font-medium text-gray-900">
+                                {m.buyerName}
+                              </h4>
                               {m.buyerEmail && (
                                 <Badge variant="outline" className="text-xs">
                                   {m.buyerEmail}
@@ -1157,23 +1375,30 @@ export default function EnhancedSellerDashboard() {
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">{m.message}</p>
+                            <p className="text-sm text-gray-600 mb-2">
+                              {m.message}
+                            </p>
                             <div className="flex items-center space-x-4 text-xs text-gray-400">
                               <span>Property: {m.propertyTitle}</span>
-                              <span>{new Date(m.timestamp).toLocaleString()}</span>
+                              <span>
+                                {new Date(m.timestamp).toLocaleString()}
+                              </span>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             {m.buyerPhone && (
                               <>
-                                <a href={`tel:${m.buyerPhone}`} className="inline-flex">
+                                <a
+                                  href={`tel:${m.buyerPhone}`}
+                                  className="inline-flex"
+                                >
                                   <Button size="sm" variant="outline">
                                     Call
                                   </Button>
                                 </a>
                                 <a
                                   href={`https://wa.me/${(m.buyerPhone || "").replace(/\D/g, "")}?text=${encodeURIComponent(
-                                    `Hi ${m.buyerName}, regarding ${m.propertyTitle}`
+                                    `Hi ${m.buyerName}, regarding ${m.propertyTitle}`,
                                   )}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
@@ -1186,7 +1411,11 @@ export default function EnhancedSellerDashboard() {
                               </>
                             )}
 
-                            <Button size="sm" variant="outline" onClick={() => handleReplyButtonClick(m)}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleReplyButtonClick(m)}
+                            >
                               {m.conversationId ? "Open Chat" : "Reply"}
                             </Button>
                           </div>
@@ -1213,19 +1442,27 @@ export default function EnhancedSellerDashboard() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span>Total Profile Views</span>
-                      <span className="font-bold text-blue-600">{stats.profileViews}</span>
+                      <span className="font-bold text-blue-600">
+                        {stats.profileViews}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Property Views</span>
-                      <span className="font-bold text-green-600">{stats.totalViews}</span>
+                      <span className="font-bold text-green-600">
+                        {stats.totalViews}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Interested Buyers</span>
-                      <span className="font-bold text-purple-600">{stats.totalInquiries}</span>
+                      <span className="font-bold text-purple-600">
+                        {stats.totalInquiries}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Premium Listings</span>
-                      <span className="font-bold text-amber-600">{stats.premiumListings}</span>
+                      <span className="font-bold text-amber-600">
+                        {stats.premiumListings}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -1241,7 +1478,8 @@ export default function EnhancedSellerDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     <p className="text-sm text-gray-600">
-                      Upgrade to premium to get more visibility and better reach for your properties.
+                      Upgrade to premium to get more visibility and better reach
+                      for your properties.
                     </p>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
@@ -1250,14 +1488,19 @@ export default function EnhancedSellerDashboard() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Star className="h-4 w-4 text-amber-500" />
-                        <span className="text-sm">Priority in search results</span>
+                        <span className="text-sm">
+                          Priority in search results
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <TrendingUp className="h-4 w-4 text-amber-500" />
                         <span className="text-sm">10x more visibility</span>
                       </div>
                     </div>
-                    <Button className="w-full bg-amber-500 hover:bg-amber-600" onClick={() => setActiveTab("payments")}>
+                    <Button
+                      className="w-full bg-amber-500 hover:bg-amber-600"
+                      onClick={() => setActiveTab("payments")}
+                    >
                       <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                     </Button>
                   </div>
@@ -1275,7 +1518,9 @@ export default function EnhancedSellerDashboard() {
               <CardContent>
                 <div className="flex flex-wrap gap-3">
                   <Link to="/seller/blog">
-                    <Button className="bg-[#C70000] hover:bg-[#A60000] text-white">Create Blog Post</Button>
+                    <Button className="bg-[#C70000] hover:bg-[#A60000] text-white">
+                      Create Blog Post
+                    </Button>
                   </Link>
                   <Link to="/seller/blog">
                     <Button variant="outline">My Posts</Button>
@@ -1298,7 +1543,10 @@ export default function EnhancedSellerDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {packages.map((pkg, idx) => (
-                      <div key={(pkg as any)._id || pkg.name || idx} className="border rounded-lg p-4">
+                      <div
+                        key={(pkg as any)._id || pkg.name || idx}
+                        className="border rounded-lg p-4"
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="font-bold text-lg">{pkg.name}</h3>
                           <Badge
@@ -1306,8 +1554,8 @@ export default function EnhancedSellerDashboard() {
                               pkg.type === "elite"
                                 ? "bg-purple-100 text-purple-800"
                                 : pkg.type === "premium"
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-blue-100 text-blue-800"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-blue-100 text-blue-800"
                             }
                           >
                             {pkg.type.toUpperCase()}
@@ -1315,17 +1563,27 @@ export default function EnhancedSellerDashboard() {
                         </div>
                         <div className="text-2xl font-bold text-[#C70000] mb-3">
                           ₹{pkg.price.toLocaleString()}{" "}
-                          <span className="text-sm text-gray-500">/{pkg.duration} days</span>
+                          <span className="text-sm text-gray-500">
+                            /{pkg.duration} days
+                          </span>
                         </div>
                         <div className="space-y-1 mb-4">
                           {pkg.features.map((feature, i) => (
-                            <div key={`${pkg._id}-${feature}-${i}`} className="flex items-center space-x-2">
+                            <div
+                              key={`${pkg._id}-${feature}-${i}`}
+                              className="flex items-center space-x-2"
+                            >
                               <CheckCircle className="h-3 w-3 text-green-500" />
                               <span className="text-sm">{feature}</span>
                             </div>
                           ))}
                         </div>
-                        <Button className="w-full bg-[#C70000] hover:bg-[#A60000]">Purchase Package</Button>
+                        <Button
+                          className="w-full bg-[#C70000] hover:bg-[#A60000]"
+                          onClick={() => navigate("/advertise")}
+                        >
+                          Purchase Package
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -1348,22 +1606,31 @@ export default function EnhancedSellerDashboard() {
                   ) : (
                     <div className="space-y-3">
                       {payments.map((p, idx) => (
-                        <div key={(p as any)._id || p.transactionId || idx} className="border rounded-lg p-3">
+                        <div
+                          key={(p as any)._id || p.transactionId || idx}
+                          className="border rounded-lg p-3"
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="font-medium">{p.package}</div>
-                              <div className="text-sm text-gray-500">{new Date(p.date).toLocaleDateString()}</div>
-                              <div className="text-xs text-gray-400">Transaction ID: {p.transactionId}</div>
+                              <div className="text-sm text-gray-500">
+                                {new Date(p.date).toLocaleDateString()}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                Transaction ID: {p.transactionId}
+                              </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-bold text-[#C70000]">₹{p.amount.toLocaleString()}</div>
+                              <div className="font-bold text-[#C70000]">
+                                ₹{p.amount.toLocaleString()}
+                              </div>
                               <Badge
                                 className={
                                   p.status === "completed"
                                     ? "bg-green-100 text-green-800"
                                     : p.status === "pending"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-red-100 text-red-800"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : "bg-red-100 text-red-800"
                                 }
                               >
                                 {p.status}
@@ -1405,7 +1672,9 @@ export default function EnhancedSellerDashboard() {
                     <Input
                       id="name"
                       value={profileData.name}
-                      onChange={(e) => setProfileData((p) => ({ ...p, name: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((p) => ({ ...p, name: e.target.value }))
+                      }
                     />
                   </div>
                   <div>
@@ -1414,7 +1683,9 @@ export default function EnhancedSellerDashboard() {
                       id="email"
                       type="email"
                       value={profileData.email}
-                      onChange={(e) => setProfileData((p) => ({ ...p, email: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((p) => ({ ...p, email: e.target.value }))
+                      }
                     />
                   </div>
                   <div>
@@ -1422,7 +1693,9 @@ export default function EnhancedSellerDashboard() {
                     <Input
                       id="phone"
                       value={profileData.phone}
-                      onChange={(e) => setProfileData((p) => ({ ...p, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((p) => ({ ...p, phone: e.target.value }))
+                      }
                     />
                   </div>
                   <Button
@@ -1438,7 +1711,7 @@ export default function EnhancedSellerDashboard() {
                             emailNotifications: profileData.emailNotifications,
                             pushNotifications: profileData.pushNotifications,
                           },
-                          token!
+                          token!,
                         );
                         setError("");
                         alert("Profile updated");
@@ -1468,7 +1741,10 @@ export default function EnhancedSellerDashboard() {
                       type="password"
                       value={profileData.currentPassword}
                       onChange={(e) =>
-                        setProfileData((p) => ({ ...p, currentPassword: e.target.value }))
+                        setProfileData((p) => ({
+                          ...p,
+                          currentPassword: e.target.value,
+                        }))
                       }
                     />
                   </div>
@@ -1478,23 +1754,35 @@ export default function EnhancedSellerDashboard() {
                       id="newPassword"
                       type="password"
                       value={profileData.newPassword}
-                      onChange={(e) => setProfileData((p) => ({ ...p, newPassword: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((p) => ({
+                          ...p,
+                          newPassword: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Label htmlFor="confirmPassword">
+                      Confirm New Password
+                    </Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={profileData.confirmPassword}
                       onChange={(e) =>
-                        setProfileData((p) => ({ ...p, confirmPassword: e.target.value }))
+                        setProfileData((p) => ({
+                          ...p,
+                          confirmPassword: e.target.value,
+                        }))
                       }
                     />
                   </div>
                   <Button
                     onClick={async () => {
-                      if (profileData.newPassword !== profileData.confirmPassword)
+                      if (
+                        profileData.newPassword !== profileData.confirmPassword
+                      )
                         return setError("New passwords do not match");
                       try {
                         const token = await getAuthToken();
@@ -1504,7 +1792,7 @@ export default function EnhancedSellerDashboard() {
                             currentPassword: profileData.currentPassword,
                             newPassword: profileData.newPassword,
                           },
-                          token!
+                          token!,
                         );
                         setProfileData((p) => ({
                           ...p,
@@ -1525,28 +1813,42 @@ export default function EnhancedSellerDashboard() {
 
                   <div className="space-y-3 pt-4 border-t">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="emailNotifications">Email Notifications</Label>
+                      <Label htmlFor="emailNotifications">
+                        Email Notifications
+                      </Label>
                       <Switch
                         id="emailNotifications"
                         checked={profileData.emailNotifications}
                         onCheckedChange={(checked) =>
-                          setProfileData((p) => ({ ...p, emailNotifications: checked }))
+                          setProfileData((p) => ({
+                            ...p,
+                            emailNotifications: checked,
+                          }))
                         }
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="pushNotifications">Push Notifications</Label>
+                      <Label htmlFor="pushNotifications">
+                        Push Notifications
+                      </Label>
                       <Switch
                         id="pushNotifications"
                         checked={profileData.pushNotifications}
                         onCheckedChange={(checked) =>
-                          setProfileData((p) => ({ ...p, pushNotifications: checked }))
+                          setProfileData((p) => ({
+                            ...p,
+                            pushNotifications: checked,
+                          }))
                         }
                       />
                     </div>
                   </div>
 
-                  <Button onClick={() => setLogoutOpen(true)} variant="destructive" className="w-full mt-4 mb-6">
+                  <Button
+                    onClick={() => setLogoutOpen(true)}
+                    variant="destructive"
+                    className="w-full mt-4 mb-6"
+                  >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </Button>
                 </CardContent>
@@ -1569,7 +1871,9 @@ export default function EnhancedSellerDashboard() {
             <DialogTitle>Reply to {replyTarget?.buyerName}</DialogTitle>
           </DialogHeader>
           <div className="p-2">
-            <p className="text-sm text-gray-500 mb-2">Property: {replyTarget?.propertyTitle}</p>
+            <p className="text-sm text-gray-500 mb-2">
+              Property: {replyTarget?.propertyTitle}
+            </p>
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
@@ -1595,8 +1899,12 @@ export default function EnhancedSellerDashboard() {
             <DialogTitle>Are you sure you want to logout?</DialogTitle>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setLogoutOpen(false)}>No</Button>
-            <Button variant="destructive" onClick={handleLogout}>Yes, Logout</Button>
+            <Button variant="outline" onClick={() => setLogoutOpen(false)}>
+              No
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Yes, Logout
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

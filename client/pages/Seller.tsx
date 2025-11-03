@@ -156,7 +156,7 @@ export default function Seller() {
   };
 
   const handleEditProperty = (propertyId: string) => {
-    navigate(`/edit-property/${propertyId}`);
+    navigate(`/post-property?edit=${propertyId}`);
   };
 
   const handleViewProperty = (propertyId: string) => {

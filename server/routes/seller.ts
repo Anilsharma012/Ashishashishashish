@@ -78,7 +78,7 @@ export const getSellerNotifications: RequestHandler = async (req, res) => {
       .find({ userId: sellerObjId })
       .toArray();
     const dismissedSet = new Set(
-      dismissed.map((d) => String(d.refId || d.sourceId || ""))
+      dismissed.map((d) => String(d.refId || d.sourceId || "")),
     );
 
     // Get all types of notifications and messages for this seller
@@ -97,7 +97,10 @@ export const getSellerNotifications: RequestHandler = async (req, res) => {
             { sellerId: sellerObjId },
             { targetUserId: sellerObjId },
             { audience: { $in: ["sellers", "all"] } },
-            { audience: "specific", specificUsers: { $in: [String(sellerId)] } },
+            {
+              audience: "specific",
+              specificUsers: { $in: [String(sellerId)] },
+            },
           ],
         })
         .sort({ createdAt: -1 })
@@ -254,7 +257,8 @@ export const getSellerNotifications: RequestHandler = async (req, res) => {
 
     // Conversations (only if unread)
     for (const conversation of conversations) {
-      if (!conversation.lastMessage || !(conversation.unreadCount > 0)) continue;
+      if (!conversation.lastMessage || !(conversation.unreadCount > 0))
+        continue;
 
       const cid = toIdString(conversation._id) ?? String(conversation._id);
       if (dismissedSet.has(cid)) continue;
@@ -307,7 +311,8 @@ export const getSellerNotifications: RequestHandler = async (req, res) => {
 
     // newest first
     unifiedNotifications.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
     // Seed welcome if empty (same as before)
@@ -394,11 +399,19 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
 
     if (!ObjectId.isValid(notificationId)) {
       // allow non-ObjectId ids (e.g., conversation id could be string) -> store dismissal read flag
-      await db.collection("dismissed_notifications").updateOne(
-        { userId: sellerObjId, refId: String(notificationId) },
-        { $set: { userId: sellerObjId, refId: String(notificationId), readAt: new Date() } },
-        { upsert: true }
-      );
+      await db
+        .collection("dismissed_notifications")
+        .updateOne(
+          { userId: sellerObjId, refId: String(notificationId) },
+          {
+            $set: {
+              userId: sellerObjId,
+              refId: String(notificationId),
+              readAt: new Date(),
+            },
+          },
+          { upsert: true },
+        );
       return res.json({ success: true, message: "Marked as read" });
     }
 
@@ -409,9 +422,13 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
     const r1 = await db.collection("notifications").updateOne(
       {
         _id,
-        $or: [{ userId: sellerObjId }, { sellerId: sellerObjId }, { targetUserId: sellerObjId }],
+        $or: [
+          { userId: sellerObjId },
+          { sellerId: sellerObjId },
+          { targetUserId: sellerObjId },
+        ],
       },
-      { $set: { isRead: true, readAt: new Date() } }
+      { $set: { isRead: true, readAt: new Date() } },
     );
     updated += r1.modifiedCount;
 
@@ -419,7 +436,10 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
     if (!updated) {
       const r2 = await db
         .collection("user_notifications")
-        .updateOne({ _id, userId: sellerObjId }, { $set: { readAt: new Date() } });
+        .updateOne(
+          { _id, userId: sellerObjId },
+          { $set: { readAt: new Date() } },
+        );
       updated += r2.modifiedCount;
     }
 
@@ -428,20 +448,31 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
       const r3 = await db.collection("messages").updateOne(
         {
           _id,
-          $or: [{ receiverId: String(sellerId) }, { targetUserId: String(sellerId) }],
+          $or: [
+            { receiverId: String(sellerId) },
+            { targetUserId: String(sellerId) },
+          ],
         },
-        { $set: { isRead: true, readAt: new Date() } }
+        { $set: { isRead: true, readAt: new Date() } },
       );
       updated += r3.modifiedCount;
     }
 
     if (!updated) {
       // fallback: create/merge dismissal with readAt
-      await db.collection("dismissed_notifications").updateOne(
-        { userId: sellerObjId, refId: String(notificationId) },
-        { $set: { userId: sellerObjId, refId: String(notificationId), readAt: new Date() } },
-        { upsert: true }
-      );
+      await db
+        .collection("dismissed_notifications")
+        .updateOne(
+          { userId: sellerObjId, refId: String(notificationId) },
+          {
+            $set: {
+              userId: sellerObjId,
+              refId: String(notificationId),
+              readAt: new Date(),
+            },
+          },
+          { upsert: true },
+        );
     }
 
     res.json({ success: true, message: "Marked as read" });
@@ -506,11 +537,20 @@ export const deleteSellerNotification: RequestHandler = async (req, res) => {
 
     // For audience-based admin announcements / conversation alerts, DO NOT delete shared docs.
     // Use per-user dismissal so it never shows up again for this user.
-    await db.collection("dismissed_notifications").updateOne(
-      { userId: sellerObjId, refId: String(notificationId) },
-      { $set: { userId: sellerObjId, refId: String(notificationId), source: src || "unknown", dismissedAt: new Date() } },
-      { upsert: true }
-    );
+    await db
+      .collection("dismissed_notifications")
+      .updateOne(
+        { userId: sellerObjId, refId: String(notificationId) },
+        {
+          $set: {
+            userId: sellerObjId,
+            refId: String(notificationId),
+            source: src || "unknown",
+            dismissedAt: new Date(),
+          },
+        },
+        { upsert: true },
+      );
 
     return res.json({
       success: true,
@@ -1365,10 +1405,11 @@ export const resubmitSellerProperty: RequestHandler = async (req, res) => {
         $set: {
           approvalStatus: "pending",
           rejectionReason: "",
+          rejectionRegion: "",
           adminComments: "",
           updatedAt: new Date(),
         },
-        $unset: { approvedAt: "", approvedBy: "" },
+        $unset: { approvedAt: "", approvedBy: "", rejectedAt: "" },
       },
     );
 
