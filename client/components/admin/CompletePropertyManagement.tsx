@@ -1023,7 +1023,10 @@ function CompletePropertyManagement() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => updateApprovalStatus(property._id || property.id, "rejected")}
+                            onClick={() => {
+                              setRejectionPropertyId(property._id || property.id);
+                              setShowRejectionDialog(true);
+                            }}
                           >
                             <X className="h-4 w-4" />
                           </Button>
