@@ -1356,6 +1356,55 @@ function CompletePropertyManagement() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Rejection Reason Dialog */}
+      <Dialog open={showRejectionDialog} onOpenChange={setShowRejectionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Property</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Rejection Reason *</label>
+              <Textarea
+                placeholder="Please provide a reason for rejecting this property..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                className="min-h-24"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowRejectionDialog(false);
+                  setRejectionReason("");
+                  setRejectionPropertyId(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (!rejectionReason.trim()) {
+                    setError("Rejection reason is required");
+                    return;
+                  }
+                  if (rejectionPropertyId) {
+                    await updateApprovalStatus(rejectionPropertyId, "rejected", rejectionReason);
+                    setShowRejectionDialog(false);
+                    setRejectionReason("");
+                    setRejectionPropertyId(null);
+                  }
+                }}
+              >
+                Reject Property
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
