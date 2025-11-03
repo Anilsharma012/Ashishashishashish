@@ -131,34 +131,44 @@ export default function CategoryProperties() {
       setLoading(true);
       const params = new URLSearchParams();
 
-      // Always include status=active as per requirements
+      // Always include status=active and approvalStatus=approved
       params.append("status", "active");
 
       // Handle category and subcategory from URL
       const currentCategory = getCurrentCategory();
-      if (currentCategory) {
-        if (currentCategory === "buy" || currentCategory === "sale") {
-          params.append("priceType", "sale");
-        } else if (currentCategory === "rent") {
-          params.append("priceType", "rent");
-        } else if (currentCategory === "lease") {
-          params.append("priceType", "lease");
-        } else if (currentCategory === "pg") {
-          params.append("propertyType", "pg");
+      
+      // Set priceType based on main category (buy/rent/lease/pg)
+      if (currentCategory === "buy" || currentCategory === "sale") {
+        params.append("priceType", "sale");
+      } else if (currentCategory === "rent") {
+        params.append("priceType", "rent");
+      } else if (currentCategory === "lease") {
+        params.append("priceType", "lease");
+      } else if (currentCategory === "pg") {
+        params.append("propertyType", "pg");
+      }
+
+      // Handle propertyType from subcategory parameter (e.g., /buy/residential, /rent/commercial)
+      if (subcategory && !slug) {
+        // subcategory is the propertyType (residential, commercial, plot, etc.)
+        params.append("propertyType", subcategory);
+      }
+
+      // Handle subCategory from slug (e.g., /buy/residential/1bhk)
+      if (slug) {
+        params.append("subCategory", slug);
+        // Also add propertyType if we have subcategory
+        if (subcategory) {
+          params.append("propertyType", subcategory);
         }
       }
 
-      // Handle subcategory from slug
-      if (slug) {
-        params.append("subCategory", slug);
-      } else if (subcategory) {
-        params.append("subCategory", subcategory);
-      }
-
-      if (category && !slug) {
+      // Handle direct propertyType from category only if it's not buy/rent/lease/pg
+      if (category && !["buy", "sale", "rent", "lease", "pg"].includes(category) && !subcategory) {
         params.append("propertyType", category);
       }
-      if (propertyType) params.append("propertyTypeSlug", propertyType);
+      
+      if (propertyType) params.append("propertyType", propertyType);
 
       // Add filter parameters
       Object.entries(filters).forEach(([key, value]) => {
