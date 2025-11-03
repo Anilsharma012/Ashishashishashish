@@ -43,11 +43,10 @@ export default function DeletedPropertiesManagement() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/admin/properties/deleted`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { api } = await import('../../lib/api');
+      const response = await api.get("admin/properties/deleted", token);
 
-      if (response.data.success) {
+      if (response.data?.success) {
         setProperties(response.data.data);
       }
     } catch (error) {
