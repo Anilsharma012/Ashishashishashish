@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Home, MessageCircle, User, FileText } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useUnreadCount } from "../hooks/useUnreadCount";
 
