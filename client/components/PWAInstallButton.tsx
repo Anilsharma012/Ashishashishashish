@@ -173,6 +173,10 @@ const PWAInstallButton = () => {
     localStorage.setItem("pwa-install-dismissed", Date.now().toString());
   };
 
+  const handleAPKDownload = () => {
+    window.location.href = "/api/app/download";
+  };
+
   // Don't show if installed or dismissed
   if (isInstalled || !isVisible) {
     return null;
