@@ -141,7 +141,9 @@ export default function CategoryProperties() {
       const response = await fetch("/api/categories");
       const data = await response.json();
       if (data.success) {
-        const foundCategory = data.data.find((cat: any) => cat.slug === category);
+        const foundCategory = data.data.find(
+          (cat: any) => cat.slug === category,
+        );
         setCategoryData(foundCategory);
       }
     } catch (error) {
@@ -159,22 +161,38 @@ export default function CategoryProperties() {
 
     // Map slug to propertyType and subCategory
     // For BHK apartments and houses
-    if (["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(slugLower)) {
+    if (
+      ["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(
+        slugLower,
+      )
+    ) {
       return { propertyType: "residential", subCategory: slugLower };
     }
 
     // For plots
-    if (slugLower === "plot" || slugLower === "land" || slugLower.includes("plot")) {
+    if (
+      slugLower === "plot" ||
+      slugLower === "land" ||
+      slugLower.includes("plot")
+    ) {
       return { propertyType: "plot" };
     }
 
     // For commercial
-    if (slugLower === "commercial" || slugLower === "office" || slugLower === "shop") {
+    if (
+      slugLower === "commercial" ||
+      slugLower === "office" ||
+      slugLower === "shop"
+    ) {
       return { propertyType: "commercial" };
     }
 
     // For agricultural
-    if (slugLower === "agricultural" || slugLower === "agriculture" || slugLower.includes("agriculture")) {
+    if (
+      slugLower === "agricultural" ||
+      slugLower === "agriculture" ||
+      slugLower.includes("agriculture")
+    ) {
       return { propertyType: "agricultural" };
     }
 
@@ -227,7 +245,11 @@ export default function CategoryProperties() {
       }
 
       // Handle direct propertyType from category only if it's not buy/rent/lease/pg
-      if (category && !["buy", "sale", "rent", "lease", "pg"].includes(category) && !subcategory) {
+      if (
+        category &&
+        !["buy", "sale", "rent", "lease", "pg"].includes(category) &&
+        !subcategory
+      ) {
         params.append("propertyType", category);
       }
 
@@ -256,7 +278,7 @@ export default function CategoryProperties() {
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     setFilters((prev) => {
       const newFilters = { ...prev, [key]: value };
-      
+
       // Update URL params
       const params = new URLSearchParams(searchParams);
       if (value) {
@@ -265,14 +287,14 @@ export default function CategoryProperties() {
         params.delete(key);
       }
       setSearchParams(params, { replace: true });
-      
+
       return newFilters;
     });
   };
 
   const clearFilters = () => {
     setFilters(initialFilters);
-    
+
     // Clear all filter params from URL, keeping only non-filter params
     const params = new URLSearchParams();
     setSearchParams(params, { replace: true });
@@ -286,18 +308,28 @@ export default function CategoryProperties() {
     const currentCategory = getCurrentCategory();
 
     if (slug) {
-      const subcategoryName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-      const categoryName = currentCategory?.replace(/\b\w/g, (l) => l.toUpperCase());
+      const subcategoryName = slug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+      const categoryName = currentCategory?.replace(/\b\w/g, (l) =>
+        l.toUpperCase(),
+      );
       return `${subcategoryName} for ${categoryName}`;
     }
     if (propertyType) {
-      return propertyType.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      return propertyType
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
     }
     if (subcategory) {
-      return subcategory.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      return subcategory
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
     }
     if (category) {
-      return category.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      return category
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
     }
     return "Properties";
   };
@@ -349,10 +381,14 @@ export default function CategoryProperties() {
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {/* Price Type */}
               <div>
-                <label className="block text-sm font-medium mb-2">Property For</label>
+                <label className="block text-sm font-medium mb-2">
+                  Property For
+                </label>
                 <select
                   value={filters.priceType}
-                  onChange={(e) => handleFilterChange("priceType", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("priceType", e.target.value)
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   <option value="">All</option>
@@ -363,20 +399,26 @@ export default function CategoryProperties() {
 
               {/* Price Range */}
               <div>
-                <label className="block text-sm font-medium mb-2">Price Range</label>
+                <label className="block text-sm font-medium mb-2">
+                  Price Range
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     placeholder="Min Price"
                     value={filters.minPrice}
-                    onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("minPrice", e.target.value)
+                    }
                     className="p-2 border border-gray-300 rounded-md"
                   />
                   <input
                     type="number"
                     placeholder="Max Price"
                     value={filters.maxPrice}
-                    onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("maxPrice", e.target.value)
+                    }
                     className="p-2 border border-gray-300 rounded-md"
                   />
                 </div>
@@ -384,10 +426,14 @@ export default function CategoryProperties() {
 
               {/* Bedrooms */}
               <div>
-                <label className="block text-sm font-medium mb-2">Bedrooms</label>
+                <label className="block text-sm font-medium mb-2">
+                  Bedrooms
+                </label>
                 <select
                   value={filters.bedrooms}
-                  onChange={(e) => handleFilterChange("bedrooms", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("bedrooms", e.target.value)
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Any</option>
@@ -400,10 +446,14 @@ export default function CategoryProperties() {
 
               {/* Bathrooms */}
               <div>
-                <label className="block text-sm font-medium mb-2">Bathrooms</label>
+                <label className="block text-sm font-medium mb-2">
+                  Bathrooms
+                </label>
                 <select
                   value={filters.bathrooms}
-                  onChange={(e) => handleFilterChange("bathrooms", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("bathrooms", e.target.value)
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Any</option>
@@ -416,20 +466,26 @@ export default function CategoryProperties() {
 
               {/* Area Range */}
               <div>
-                <label className="block text-sm font-medium mb-2">Area (sq ft)</label>
+                <label className="block text-sm font-medium mb-2">
+                  Area (sq ft)
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="number"
                     placeholder="Min Area"
                     value={filters.minArea}
-                    onChange={(e) => handleFilterChange("minArea", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("minArea", e.target.value)
+                    }
                     className="p-2 border border-gray-300 rounded-md"
                   />
                   <input
                     type="number"
                     placeholder="Max Area"
                     value={filters.maxArea}
-                    onChange={(e) => handleFilterChange("maxArea", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("maxArea", e.target.value)
+                    }
                     className="p-2 border border-gray-300 rounded-md"
                   />
                 </div>
@@ -454,10 +510,14 @@ export default function CategoryProperties() {
 
               {/* Mohalla */}
               <div>
-                <label className="block text-sm font-medium mb-2">Mohalla</label>
+                <label className="block text-sm font-medium mb-2">
+                  Mohalla
+                </label>
                 <select
                   value={filters.mohalla}
-                  onChange={(e) => handleFilterChange("mohalla", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("mohalla", e.target.value)
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Any Mohalla</option>
@@ -471,7 +531,9 @@ export default function CategoryProperties() {
 
               {/* Sort By */}
               <div>
-                <label className="block text-sm font-medium mb-2">Sort By</label>
+                <label className="block text-sm font-medium mb-2">
+                  Sort By
+                </label>
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange("sortBy", e.target.value)}
@@ -488,7 +550,11 @@ export default function CategoryProperties() {
 
             {/* Drawer Footer - sticky */}
             <div className="p-4 border-t sticky bottom-0 bg-white z-10 flex gap-2">
-              <Button onClick={clearFilters} variant="outline" className="flex-1">
+              <Button
+                onClick={clearFilters}
+                variant="outline"
+                className="flex-1"
+              >
                 Clear All
               </Button>
               <Button
@@ -511,10 +577,14 @@ export default function CategoryProperties() {
 
               {/* Property For */}
               <div>
-                <label className="block text-sm font-medium mb-2">Property For</label>
+                <label className="block text-sm font-medium mb-2">
+                  Property For
+                </label>
                 <select
                   value={filters.priceType}
-                  onChange={(e) => handleFilterChange("priceType", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("priceType", e.target.value)
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md text-sm"
                 >
                   <option value="">All</option>
@@ -525,20 +595,26 @@ export default function CategoryProperties() {
 
               {/* Price Range */}
               <div>
-                <label className="block text-sm font-medium mb-2">Price Range</label>
+                <label className="block text-sm font-medium mb-2">
+                  Price Range
+                </label>
                 <div className="space-y-2">
                   <input
                     type="number"
                     placeholder="Min Price"
                     value={filters.minPrice}
-                    onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("minPrice", e.target.value)
+                    }
                     className="w-full p-2 border border-gray-300 rounded-md text-sm"
                   />
                   <input
                     type="number"
                     placeholder="Max Price"
                     value={filters.maxPrice}
-                    onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("maxPrice", e.target.value)
+                    }
                     className="w-full p-2 border border-gray-300 rounded-md text-sm"
                   />
                 </div>
@@ -546,10 +622,14 @@ export default function CategoryProperties() {
 
               {/* Bedrooms */}
               <div>
-                <label className="block text-sm font-medium mb-2">Bedrooms</label>
+                <label className="block text-sm font-medium mb-2">
+                  Bedrooms
+                </label>
                 <select
                   value={filters.bedrooms}
-                  onChange={(e) => handleFilterChange("bedrooms", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("bedrooms", e.target.value)
+                  }
                   className="w-full p-2 border border-gray-300 rounded-md text-sm"
                 >
                   <option value="">Any</option>
@@ -579,7 +659,9 @@ export default function CategoryProperties() {
 
               {/* Sort By */}
               <div>
-                <label className="block text-sm font-medium mb-2">Sort By</label>
+                <label className="block text-sm font-medium mb-2">
+                  Sort By
+                </label>
                 <select
                   value={filters.sortBy}
                   onChange={(e) => handleFilterChange("sortBy", e.target.value)}
@@ -596,7 +678,11 @@ export default function CategoryProperties() {
 
             {/* Sticky footer: Clear All always visible */}
             <div className="p-4 border-t bg-white">
-              <Button onClick={clearFilters} variant="outline" className="w-full">
+              <Button
+                onClick={clearFilters}
+                variant="outline"
+                className="w-full"
+              >
                 Clear All Filters
               </Button>
             </div>
@@ -616,8 +702,12 @@ export default function CategoryProperties() {
                 <ArrowLeft className="h-5 w-5 text-gray-700" />
               </button>
               <div>
-                <h1 className="text-xl font-semibold text-gray-800">{getCategoryTitle()}</h1>
-                <p className="text-sm text-gray-600">{properties.length} properties found</p>
+                <h1 className="text-xl font-semibold text-gray-800">
+                  {getCategoryTitle()}
+                </h1>
+                <p className="text-sm text-gray-600">
+                  {properties.length} properties found
+                </p>
               </div>
             </div>
 
@@ -670,9 +760,12 @@ export default function CategoryProperties() {
             {properties.length === 0 ? (
               <div className="text-center py-16">
                 <div className="bg-white rounded-lg p-8 shadow-sm inline-block">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Properties Found</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No Properties Found
+                  </h3>
                   <p className="text-gray-600 mb-4">
-                    No properties match your current filters. Try adjusting your search criteria.
+                    No properties match your current filters. Try adjusting your
+                    search criteria.
                   </p>
                   <Button
                     onClick={clearFilters}
@@ -700,7 +793,9 @@ export default function CategoryProperties() {
                   >
                     <div
                       className={`relative ${
-                        viewMode === "grid" ? "w-full h-48" : "w-32 h-32 flex-shrink-0"
+                        viewMode === "grid"
+                          ? "w-full h-48"
+                          : "w-32 h-32 flex-shrink-0"
                       }`}
                     >
                       <img
@@ -730,7 +825,9 @@ export default function CategoryProperties() {
                       </button>
                     </div>
 
-                    <div className={`p-4 ${viewMode === "grid" ? "flex-1" : ""}`}>
+                    <div
+                      className={`p-4 ${viewMode === "grid" ? "flex-1" : ""}`}
+                    >
                       <div
                         className={`${
                           viewMode === "grid"
@@ -754,7 +851,8 @@ export default function CategoryProperties() {
                       <div className="flex items-center text-gray-500 mb-2">
                         <MapPin className="h-4 w-4 mr-1" />
                         <span className="text-sm">
-                          {property.location?.address || "Location not available"}
+                          {property.location?.address ||
+                            "Location not available"}
                         </span>
                       </div>
 
@@ -776,7 +874,10 @@ export default function CategoryProperties() {
                         <span className="text-xs text-gray-400">
                           {property.contactInfo?.name || "Owner"}
                         </span>
-                        <Button size="sm" className="bg-[#C70000] hover:bg-[#A60000] text-white">
+                        <Button
+                          size="sm"
+                          className="bg-[#C70000] hover:bg-[#A60000] text-white"
+                        >
                           <Phone className="h-3 w-3 mr-1" />
                           Call
                         </Button>
