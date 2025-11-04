@@ -599,6 +599,20 @@ export const sendPostRejectedNotification = async (propertyId: string, userId: s
 
     const db = getDatabase();
 
+    // Check if post rejected notification already exists for this property (deduplication)
+    const existingNotif = await db.collection("user_notifications").findOne({
+      userId: new ObjectId(userId),
+      type: "post_rejected",
+      createdAt: {
+        $gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+      },
+    });
+
+    if (existingNotif) {
+      console.log(`⚠️ Post rejected notification already sent to user for this property, skipping`);
+      return true;
+    }
+
     // Create notification record in notifications collection
     const notificationData = {
       title: "Property Listing Rejected ❌",
