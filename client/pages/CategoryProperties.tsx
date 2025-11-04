@@ -9,9 +9,12 @@ import {
   Heart,
   Phone,
   X,
+  ZoomIn,
 } from "lucide-react";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
+import ImageModal from "../components/ImageModal";
+import Watermark from "../components/Watermark";
 import { Button } from "../components/ui/button";
 import { Property } from "@shared/types";
 
@@ -76,6 +79,11 @@ export default function CategoryProperties() {
 
   // Drawer / sidebar
   const [showFilters, setShowFilters] = useState(false);
+
+  // Image zoom modal
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedPropertyForZoom, setSelectedPropertyForZoom] =
+    useState<Property | null>(null);
 
   // Initialize filters from URL params on mount
   const getInitialFilters = (): FilterState => {
@@ -210,9 +218,6 @@ export default function CategoryProperties() {
       setLoading(true);
       const params = new URLSearchParams();
 
-      // Always include status=active and approvalStatus=approved
-      params.append("status", "active");
-
       // Handle category and subcategory from URL
       const currentCategory = getCurrentCategory();
 
@@ -257,19 +262,30 @@ export default function CategoryProperties() {
 
       // Add filter parameters
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value && key !== "sortBy") params.append(key, value);
       });
 
-      const apiResponse = await (window as any).api(`properties?${params}`);
+      // Add sorting
+      if (filters.sortBy) params.append("sortBy", filters.sortBy);
+
+      const apiResponse = await (window as any).api(
+        `properties?${params.toString()}`,
+      );
       const data = apiResponse.ok
         ? apiResponse.json
         : { success: false, error: "Failed to fetch properties" };
 
-      if (data.success) {
-        setProperties(data.data.properties || []);
+      if (data.success && data.data) {
+        setProperties(
+          Array.isArray(data.data.properties) ? data.data.properties : [],
+        );
+      } else {
+        console.warn("API response:", data);
+        setProperties([]);
       }
     } catch (error) {
       console.error("Error fetching properties:", error);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
@@ -792,14 +808,13 @@ export default function CategoryProperties() {
                     }`}
                   >
                     <div
-                      className={`relative ${
+                      className={`relative group ${
                         viewMode === "grid"
                           ? "w-full h-48"
                           : "w-32 h-32 flex-shrink-0"
                       }`}
                     >
                       <img
-                        data-wm="1"
                         src={
                           property.coverImageUrl ??
                           property.images?.[0]?.url ??
@@ -807,21 +822,65 @@ export default function CategoryProperties() {
                           "/placeholder.png"
                         }
                         alt={property.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover cursor-pointer group-hover:opacity-90 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const images = Array.isArray(property.images)
+                            ? property.images
+                                .map((img) =>
+                                  typeof img === "string"
+                                    ? img
+                                    : (img as any)?.url,
+                                )
+                                .filter(Boolean)
+                            : [];
+                          if (images.length > 0) {
+                            setSelectedPropertyForZoom(property);
+                            setImageModalOpen(true);
+                          }
+                        }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = "/placeholder.png";
                         }}
                       />
+                      <Watermark
+                        variant="badge"
+                        small
+                        text="ashishproperties.in"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const images = Array.isArray(property.images)
+                            ? property.images
+                                .map((img) =>
+                                  typeof img === "string"
+                                    ? img
+                                    : (img as any)?.url,
+                                )
+                                .filter(Boolean)
+                            : [];
+                          if (images.length > 0) {
+                            setSelectedPropertyForZoom(property);
+                            setImageModalOpen(true);
+                          }
+                        }}
+                        className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition z-10"
+                        aria-label="Zoom image"
+                        title="Click to zoom"
+                      >
+                        <ZoomIn className="h-3.5 w-3.5 text-gray-700" />
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           // TODO: favorites toggle
                         }}
-                        className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50"
+                        className="absolute top-2 right-10 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white opacity-0 group-hover:opacity-100 transition z-10"
                         aria-label="Save"
                       >
-                        <Heart className="h-4 w-4 text-gray-600" />
+                        <Heart className="h-3.5 w-3.5 text-gray-600" />
                       </button>
                     </div>
 
@@ -892,6 +951,27 @@ export default function CategoryProperties() {
       </div>
 
       <BottomNavigation />
+
+      {/* Image Zoom Modal */}
+      {selectedPropertyForZoom && (
+        <ImageModal
+          isOpen={imageModalOpen}
+          onClose={() => {
+            setImageModalOpen(false);
+            setSelectedPropertyForZoom(null);
+          }}
+          images={
+            Array.isArray(selectedPropertyForZoom.images)
+              ? selectedPropertyForZoom.images
+                  .map((img) =>
+                    typeof img === "string" ? img : (img as any)?.url,
+                  )
+                  .filter(Boolean)
+              : []
+          }
+          title={selectedPropertyForZoom.title}
+        />
+      )}
     </div>
   );
 }

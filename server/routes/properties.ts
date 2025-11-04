@@ -57,7 +57,13 @@ export const getProperties: RequestHandler = async (req, res) => {
       limit = "20",
     } = req.query;
 
-    const filter: any = { status: "active", approvalStatus: "approved" };
+    const filter: any = {
+      status: "active",
+      $or: [
+        { approvalStatus: "approved" },
+        { approvalStatus: { $exists: false } },
+      ],
+    };
 
     // Support filtering by category (buy, rent, commercial, etc.)
     if (category) {
@@ -96,10 +102,20 @@ export const getProperties: RequestHandler = async (req, res) => {
     if (sector) filter["location.sector"] = sector;
     if (mohalla) filter["location.mohalla"] = mohalla;
     if (landmark) filter["location.landmark"] = landmark;
-    if (bedrooms)
-      filter["specifications.bedrooms"] = parseInt(String(bedrooms));
-    if (bathrooms)
-      filter["specifications.bathrooms"] = parseInt(String(bathrooms));
+    if (bedrooms) {
+      const bedroomNum = parseInt(String(bedrooms));
+      if (String(bedrooms) === "4+") {
+        filter["specifications.bedrooms"] = { $gte: 4 };
+      } else if (!isNaN(bedroomNum)) {
+        filter["specifications.bedrooms"] = bedroomNum;
+      }
+    }
+    if (bathrooms) {
+      const bathroomNum = parseInt(String(bathrooms));
+      if (!isNaN(bathroomNum)) {
+        filter["specifications.bathrooms"] = bathroomNum;
+      }
+    }
 
     if (minPrice || maxPrice) {
       filter.price = {};
@@ -429,15 +445,13 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Invalid notification ID" });
     }
 
-    await db
-      .collection("user_notifications")
-      .updateOne(
-        {
-          _id: new ObjectId(String(notificationId)),
-          userId: new ObjectId(String(userId)),
-        },
-        { $set: { isRead: true, readAt: new Date() } },
-      );
+    await db.collection("user_notifications").updateOne(
+      {
+        _id: new ObjectId(String(notificationId)),
+        userId: new ObjectId(String(userId)),
+      },
+      { $set: { isRead: true, readAt: new Date() } },
+    );
 
     res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {

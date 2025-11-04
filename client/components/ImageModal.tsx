@@ -1,12 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  ZoomIn,
-  ZoomOut,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface ImageModalProps {
@@ -46,21 +39,14 @@ export default function ImageModal({
 
   if (!isOpen) return null;
 
-  const handleZoomIn = () => {
-    setZoomLevel((prev) => Math.min(prev + 0.25, 4));
-  };
-
-  const handleZoomOut = () => {
-    const newZoom = Math.max(zoomLevel - 0.25, 1);
-    setZoomLevel(newZoom);
-    if (newZoom === 1) {
+  const handleToggleZoom = () => {
+    if (zoomLevel > 1) {
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
+    } else {
+      setZoomLevel(2);
       setPosition({ x: 0, y: 0 });
     }
-  };
-
-  const handleResetZoom = () => {
-    setZoomLevel(1);
-    setPosition({ x: 0, y: 0 });
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -90,14 +76,49 @@ export default function ImageModal({
     try {
       const response = await fetch(currentImage);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `property-image-${currentIndex + 1}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        // Draw the image
+        ctx.drawImage(img, 0, 0);
+
+        // Add watermark
+        const fontSize = Math.max(40, Math.floor(img.width / 8));
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // Rotate canvas for diagonal watermark
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillText("ashishproperties.in", 0, 0);
+        ctx.restore();
+
+        // Download the canvas as image
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return;
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `property-image-${currentIndex + 1}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          },
+          "image/jpeg",
+          0.95,
+        );
+      };
+      img.src = window.URL.createObjectURL(blob);
     } catch (error) {
       console.error("Download failed:", error);
     }
@@ -106,14 +127,16 @@ export default function ImageModal({
   const nextImage = () => {
     if (currentIndex < images.length - 1) {
       setCurrentIndex(currentIndex + 1);
-      handleResetZoom();
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
     }
   };
 
   const prevImage = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-      handleResetZoom();
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
     }
   };
 
@@ -138,36 +161,9 @@ export default function ImageModal({
           <Button
             size="sm"
             variant="ghost"
-            onClick={handleZoomIn}
-            disabled={zoomLevel >= 4}
-            className="text-white hover:bg-white/20"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleZoomOut}
-            disabled={zoomLevel <= 1}
-            className="text-white hover:bg-white/20"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          {zoomLevel > 1 && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleResetZoom}
-              className="text-white hover:bg-white/20"
-            >
-              Reset
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
             onClick={handleDownload}
             className="text-white hover:bg-white/20"
+            title="Download with watermark"
           >
             <Download className="h-4 w-4" />
           </Button>
@@ -190,12 +186,13 @@ export default function ImageModal({
           onMouseDown={handleMouseDown}
           style={{
             cursor:
-              zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+              zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "pointer",
           }}
         >
           <img
             src={currentImage}
             alt={title}
+            onClick={handleToggleZoom}
             className="max-w-full max-h-full object-contain transition-transform"
             style={{
               transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
@@ -205,13 +202,14 @@ export default function ImageModal({
           />
 
           {/* Watermark */}
-          <div className="absolute inset-0 pointer-events-none opacity-30 flex items-center justify-center">
+          <div className="absolute inset-0 pointer-events-none opacity-40 flex items-center justify-center">
             <div
-              className="text-6xl font-bold text-white select-none"
+              className="text-4xl font-bold text-white select-none"
               style={{
-                textShadow: "3px 3px 6px rgba(0,0,0,0.7)",
+                textShadow: "2px 2px 6px rgba(0,0,0,0.7)",
                 transform: "rotate(-45deg)",
                 whiteSpace: "nowrap",
+                letterSpacing: "1px",
               }}
             >
               ashishproperties.in
