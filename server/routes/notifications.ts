@@ -378,26 +378,38 @@ export const getNotificationById: RequestHandler = async (req, res) => {
 };
 
 // Send welcome notification to new users (internal function)
+// Creates 2 notifications for new users (one welcome, one onboarding tip)
 export const sendWelcomeNotification = async (userId: string, userName: string, userType: string) => {
   try {
-    console.log(`🎉 Sending welcome notification to new ${userType}: ${userName} (${userId})`);
+    console.log(`🎉 Sending welcome notifications to new ${userType}: ${userName} (${userId})`);
 
     const db = getDatabase();
 
-    // Create welcome notification specifically for this user
+    // Check if welcome notification already exists (deduplication)
+    const existingWelcome = await db.collection("user_notifications").findOne({
+      userId: new ObjectId(userId),
+      type: "welcome",
+    });
+
+    if (existingWelcome) {
+      console.log(`⚠️ Welcome notification already sent to ${userName}, skipping`);
+      return true;
+    }
+
+    // NOTIFICATION 1: Welcome message
     const welcomeMessage = `Welcome to POSTTRR, ${userName}! 🏠 We're excited to have you join our property community. Start exploring properties and connect with verified ${userType === 'buyer' ? 'sellers' : 'buyers'} in your area.`;
 
-    const notificationData: Omit<NotificationData, "_id"> = {
-      title: `Welcome to POSTTRR! ���`,
+    const welcomeNotificationData: Omit<NotificationData, "_id"> = {
+      title: `Welcome to POSTTRR! 🏠`,
       message: welcomeMessage,
-      type: "both", // Send both email and push notification
+      type: "both",
       audience: "specific",
       specificUsers: [userId],
       sentAt: new Date(),
       recipientCount: 1,
       deliveredCount: 0,
       status: "sent",
-      createdBy: "system", // System-generated notification
+      createdBy: "system",
       metadata: {
         emailsSent: 0,
         pushNotificationsSent: 0,
@@ -406,16 +418,16 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
       },
     };
 
-    // Insert notification record
-    const result = await db.collection("notifications").insertOne(notificationData);
-    const notificationId = result.insertedId;
+    // Insert first notification
+    const result1 = await db.collection("notifications").insertOne(welcomeNotificationData);
+    const notificationId1 = result1.insertedId;
 
     // Create user notification entry for dashboard display
-    const userNotification = {
+    const userNotification1 = {
       userId: new ObjectId(userId),
-      notificationId: notificationId,
-      title: notificationData.title,
-      message: notificationData.message,
+      notificationId: notificationId1,
+      title: welcomeNotificationData.title,
+      message: welcomeNotificationData.message,
       type: "welcome",
       delivered: true,
       read: false,
@@ -423,11 +435,11 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
       createdAt: new Date(),
     };
 
-    await db.collection("user_notifications").insertOne(userNotification);
+    await db.collection("user_notifications").insertOne(userNotification1);
 
-    // Update notification as delivered
+    // Update first notification as delivered
     await db.collection("notifications").updateOne(
-      { _id: notificationId },
+      { _id: notificationId1 },
       {
         $set: {
           deliveredCount: 1,
@@ -437,7 +449,62 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
       }
     );
 
-    console.log(`✅ Welcome notification sent successfully to ${userName}`);
+    // NOTIFICATION 2: Quick start guide/onboarding tip
+    const startMessage = userType === 'seller'
+      ? `📋 Get started: Complete your profile, upload quality photos, and set competitive prices to attract buyers.`
+      : `🔍 Get started: Set your property preferences in Settings to receive personalized recommendations.`;
+
+    const startNotificationData: Omit<NotificationData, "_id"> = {
+      title: `📋 Quick Start Guide`,
+      message: startMessage,
+      type: "both",
+      audience: "specific",
+      specificUsers: [userId],
+      sentAt: new Date(),
+      recipientCount: 1,
+      deliveredCount: 0,
+      status: "sent",
+      createdBy: "system",
+      metadata: {
+        emailsSent: 0,
+        pushNotificationsSent: 0,
+        failedDeliveries: 0,
+        errorDetails: [],
+      },
+    };
+
+    // Insert second notification
+    const result2 = await db.collection("notifications").insertOne(startNotificationData);
+    const notificationId2 = result2.insertedId;
+
+    // Create second user notification entry
+    const userNotification2 = {
+      userId: new ObjectId(userId),
+      notificationId: notificationId2,
+      title: startNotificationData.title,
+      message: startNotificationData.message,
+      type: "onboarding",
+      delivered: true,
+      read: false,
+      deliveredAt: new Date(),
+      createdAt: new Date(),
+    };
+
+    await db.collection("user_notifications").insertOne(userNotification2);
+
+    // Update second notification as delivered
+    await db.collection("notifications").updateOne(
+      { _id: notificationId2 },
+      {
+        $set: {
+          deliveredCount: 1,
+          "metadata.emailsSent": 1,
+          "metadata.pushNotificationsSent": 1,
+        }
+      }
+    );
+
+    console.log(`✅ Welcome notifications (2) sent successfully to ${userName}`);
     return true;
   } catch (error) {
     console.error(`❌ Failed to send welcome notification:`, error);
