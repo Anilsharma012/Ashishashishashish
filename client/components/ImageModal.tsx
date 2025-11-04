@@ -201,13 +201,14 @@ export default function ImageModal({
           />
 
           {/* Watermark */}
-          <div className="absolute inset-0 pointer-events-none opacity-30 flex items-center justify-center">
+          <div className="absolute inset-0 pointer-events-none opacity-50 flex items-center justify-center">
             <div
-              className="text-6xl font-bold text-white select-none"
+              className="text-8xl font-bold text-white select-none"
               style={{
-                textShadow: "3px 3px 6px rgba(0,0,0,0.7)",
+                textShadow: "4px 4px 12px rgba(0,0,0,0.9)",
                 transform: "rotate(-45deg)",
                 whiteSpace: "nowrap",
+                letterSpacing: "2px",
               }}
             >
               ashishproperties.in
