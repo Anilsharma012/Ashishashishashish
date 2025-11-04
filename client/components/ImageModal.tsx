@@ -128,14 +128,16 @@ export default function ImageModal({
   const nextImage = () => {
     if (currentIndex < images.length - 1) {
       setCurrentIndex(currentIndex + 1);
-      handleResetZoom();
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
     }
   };
 
   const prevImage = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-      handleResetZoom();
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
     }
   };
 
