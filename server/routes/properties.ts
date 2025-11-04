@@ -102,10 +102,20 @@ export const getProperties: RequestHandler = async (req, res) => {
     if (sector) filter["location.sector"] = sector;
     if (mohalla) filter["location.mohalla"] = mohalla;
     if (landmark) filter["location.landmark"] = landmark;
-    if (bedrooms)
-      filter["specifications.bedrooms"] = parseInt(String(bedrooms));
-    if (bathrooms)
-      filter["specifications.bathrooms"] = parseInt(String(bathrooms));
+    if (bedrooms) {
+      const bedroomNum = parseInt(String(bedrooms));
+      if (String(bedrooms) === "4+") {
+        filter["specifications.bedrooms"] = { $gte: 4 };
+      } else if (!isNaN(bedroomNum)) {
+        filter["specifications.bedrooms"] = bedroomNum;
+      }
+    }
+    if (bathrooms) {
+      const bathroomNum = parseInt(String(bathrooms));
+      if (!isNaN(bathroomNum)) {
+        filter["specifications.bathrooms"] = bathroomNum;
+      }
+    }
 
     if (minPrice || maxPrice) {
       filter.price = {};
