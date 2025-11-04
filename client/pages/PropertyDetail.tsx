@@ -21,6 +21,7 @@ import {
 import { useWatermark } from "../hooks/useWatermark";
 import Watermark from "../components/Watermark";
 import ImageViewerWithZoom from "../components/ImageViewerWithZoom";
+import ImageModal from "../components/ImageModal";
 import { Button } from "../components/ui/button";
 import {
   Card,
