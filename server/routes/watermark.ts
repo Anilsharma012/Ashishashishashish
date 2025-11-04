@@ -3,6 +3,7 @@ import { getDatabase } from "../db/mongodb";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import axios from "axios";
 
 const upload = multer({
   storage: multer.diskStorage({
