@@ -106,10 +106,7 @@ async function initializePropertyCategories() {
       if (existingCategory) {
         await db
           .collection("categories")
-          .updateOne(
-            { slug: categoryData.slug },
-            { $set: categoryDoc }
-          );
+          .updateOne({ slug: categoryData.slug }, { $set: categoryDoc });
       } else {
         await db.collection("categories").insertOne(categoryDoc);
       }
@@ -200,14 +197,12 @@ export async function seedDefaultData() {
       const exists = await db.collection("users").findOne({ email: u.email });
       if (!exists) {
         const hashed = await bcrypt.hash(u.password, 10);
-        await db
-          .collection("users")
-          .insertOne({
-            ...u,
-            password: hashed,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
+        await db.collection("users").insertOne({
+          ...u,
+          password: hashed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
         resultSummary.testUsersCreated++;
       }
     }

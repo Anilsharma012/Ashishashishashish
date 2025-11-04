@@ -37,18 +37,54 @@ const categories: CategoryData[] = [
       { name: "1 BHK", slug: "1bhk", description: "1 Bedroom apartments" },
       { name: "2 BHK", slug: "2bhk", description: "2 Bedroom apartments" },
       { name: "3 BHK", slug: "3bhk", description: "3 Bedroom apartments" },
-      { name: "4+ BHK", slug: "4bhk-plus", description: "4 or more bedroom apartments" },
-      { name: "Independent House", slug: "independent-house", description: "Standalone houses" },
+      {
+        name: "4+ BHK",
+        slug: "4bhk-plus",
+        description: "4 or more bedroom apartments",
+      },
+      {
+        name: "Independent House",
+        slug: "independent-house",
+        description: "Standalone houses",
+      },
       { name: "Villa", slug: "villa", description: "Luxury villas" },
-      { name: "Builder Floor", slug: "builder-floor", description: "Builder floors" },
+      {
+        name: "Builder Floor",
+        slug: "builder-floor",
+        description: "Builder floors",
+      },
       { name: "Penthouse", slug: "penthouse", description: "Penthouse units" },
-      { name: "Studio Apartment", slug: "studio-apartment", description: "Studio apartments" },
+      {
+        name: "Studio Apartment",
+        slug: "studio-apartment",
+        description: "Studio apartments",
+      },
       { name: "Duplex", slug: "duplex", description: "Duplex properties" },
-      { name: "Residential Plot", slug: "residential-plot", description: "Land for residential construction" },
-      { name: "Commercial Plot", slug: "commercial-plot", description: "Land for commercial development" },
-      { name: "Industrial Plot", slug: "industrial-plot", description: "Land for industrial purposes" },
-      { name: "Agricultural Land", slug: "agricultural-land", description: "Farmland and agricultural plots" },
-      { name: "Plot/Land", slug: "plot", description: "Plots and land for sale" },
+      {
+        name: "Residential Plot",
+        slug: "residential-plot",
+        description: "Land for residential construction",
+      },
+      {
+        name: "Commercial Plot",
+        slug: "commercial-plot",
+        description: "Land for commercial development",
+      },
+      {
+        name: "Industrial Plot",
+        slug: "industrial-plot",
+        description: "Land for industrial purposes",
+      },
+      {
+        name: "Agricultural Land",
+        slug: "agricultural-land",
+        description: "Farmland and agricultural plots",
+      },
+      {
+        name: "Plot/Land",
+        slug: "plot",
+        description: "Plots and land for sale",
+      },
     ],
   },
   {
@@ -60,14 +96,42 @@ const categories: CategoryData[] = [
     sortOrder: 2,
     isActive: true,
     subcategories: [
-      { name: "1 BHK", slug: "1bhk", description: "1 Bedroom apartments for rent" },
-      { name: "2 BHK", slug: "2bhk", description: "2 Bedroom apartments for rent" },
-      { name: "3 BHK", slug: "3bhk", description: "3 Bedroom apartments for rent" },
-      { name: "4+ BHK", slug: "4bhk-plus", description: "4+ Bedroom apartments for rent" },
-      { name: "Independent House", slug: "independent-house", description: "Houses for rent" },
+      {
+        name: "1 BHK",
+        slug: "1bhk",
+        description: "1 Bedroom apartments for rent",
+      },
+      {
+        name: "2 BHK",
+        slug: "2bhk",
+        description: "2 Bedroom apartments for rent",
+      },
+      {
+        name: "3 BHK",
+        slug: "3bhk",
+        description: "3 Bedroom apartments for rent",
+      },
+      {
+        name: "4+ BHK",
+        slug: "4bhk-plus",
+        description: "4+ Bedroom apartments for rent",
+      },
+      {
+        name: "Independent House",
+        slug: "independent-house",
+        description: "Houses for rent",
+      },
       { name: "Villa", slug: "villa", description: "Villas for rent" },
-      { name: "Builder Floor", slug: "builder-floor", description: "Builder floors for rent" },
-      { name: "Studio", slug: "studio-apartment", description: "Studio apartments for rent" },
+      {
+        name: "Builder Floor",
+        slug: "builder-floor",
+        description: "Builder floors for rent",
+      },
+      {
+        name: "Studio",
+        slug: "studio-apartment",
+        description: "Studio apartments for rent",
+      },
     ],
   },
   {
@@ -78,13 +142,41 @@ const categories: CategoryData[] = [
     sortOrder: 3,
     isActive: true,
     subcategories: [
-      { name: "Office Space", slug: "office-space", description: "Commercial office units" },
-      { name: "Shop/Showroom", slug: "shop-showroom", description: "Retail spaces and showrooms" },
-      { name: "Warehouse", slug: "warehouse", description: "Storage and warehouse spaces" },
-      { name: "Industrial Land", slug: "industrial-land", description: "Land for industrial use" },
-      { name: "Business Center", slug: "business-center", description: "Shared office spaces" },
-      { name: "Co-working Space", slug: "coworking", description: "Co-working environments" },
-      { name: "Restaurant Space", slug: "restaurant-space", description: "Space for restaurants" },
+      {
+        name: "Office Space",
+        slug: "office-space",
+        description: "Commercial office units",
+      },
+      {
+        name: "Shop/Showroom",
+        slug: "shop-showroom",
+        description: "Retail spaces and showrooms",
+      },
+      {
+        name: "Warehouse",
+        slug: "warehouse",
+        description: "Storage and warehouse spaces",
+      },
+      {
+        name: "Industrial Land",
+        slug: "industrial-land",
+        description: "Land for industrial use",
+      },
+      {
+        name: "Business Center",
+        slug: "business-center",
+        description: "Shared office spaces",
+      },
+      {
+        name: "Co-working Space",
+        slug: "coworking",
+        description: "Co-working environments",
+      },
+      {
+        name: "Restaurant Space",
+        slug: "restaurant-space",
+        description: "Space for restaurants",
+      },
       { name: "Factory", slug: "factory", description: "Industrial factories" },
     ],
   },
@@ -96,15 +188,51 @@ const categories: CategoryData[] = [
     sortOrder: 4,
     isActive: true,
     subcategories: [
-      { name: "Agricultural Land", slug: "agricultural-land", description: "Farmland and agricultural plots" },
-      { name: "Farmhouse with Land", slug: "farmhouse-with-land", description: "Farmhouse with land" },
-      { name: "Orchard/Plantation", slug: "orchard-plantation", description: "Orchard and plantation land" },
-      { name: "Dairy Farm", slug: "dairy-farm", description: "Dairy farming land" },
-      { name: "Poultry Farm", slug: "poultry-farm", description: "Poultry farming land" },
-      { name: "Fish/Prawn Farm", slug: "fish-farm-pond", description: "Fish and prawn farming ponds" },
-      { name: "Polyhouse/Greenhouse", slug: "polyhouse-greenhouse", description: "Polyhouse and greenhouse structures" },
-      { name: "Pasture/Grazing Land", slug: "pasture-grazing", description: "Pasture and grazing land" },
-      { name: "Horticulture Land", slug: "horticulture-land", description: "Horticulture farming land" },
+      {
+        name: "Agricultural Land",
+        slug: "agricultural-land",
+        description: "Farmland and agricultural plots",
+      },
+      {
+        name: "Farmhouse with Land",
+        slug: "farmhouse-with-land",
+        description: "Farmhouse with land",
+      },
+      {
+        name: "Orchard/Plantation",
+        slug: "orchard-plantation",
+        description: "Orchard and plantation land",
+      },
+      {
+        name: "Dairy Farm",
+        slug: "dairy-farm",
+        description: "Dairy farming land",
+      },
+      {
+        name: "Poultry Farm",
+        slug: "poultry-farm",
+        description: "Poultry farming land",
+      },
+      {
+        name: "Fish/Prawn Farm",
+        slug: "fish-farm-pond",
+        description: "Fish and prawn farming ponds",
+      },
+      {
+        name: "Polyhouse/Greenhouse",
+        slug: "polyhouse-greenhouse",
+        description: "Polyhouse and greenhouse structures",
+      },
+      {
+        name: "Pasture/Grazing Land",
+        slug: "pasture-grazing",
+        description: "Pasture and grazing land",
+      },
+      {
+        name: "Horticulture Land",
+        slug: "horticulture-land",
+        description: "Horticulture farming land",
+      },
     ],
   },
   {
@@ -115,12 +243,36 @@ const categories: CategoryData[] = [
     sortOrder: 5,
     isActive: true,
     subcategories: [
-      { name: "Boys PG", slug: "boys-pg", description: "Paying guest accommodation for men" },
-      { name: "Girls PG", slug: "girls-pg", description: "Paying guest accommodation for women" },
-      { name: "Co-living Space", slug: "co-living", description: "Modern shared living spaces" },
-      { name: "Shared Room", slug: "shared-room", description: "Shared room accommodation" },
-      { name: "Single Room", slug: "single-room", description: "Private single room accommodation" },
-      { name: "Hostel", slug: "hostel", description: "Dormitory style accommodation" },
+      {
+        name: "Boys PG",
+        slug: "boys-pg",
+        description: "Paying guest accommodation for men",
+      },
+      {
+        name: "Girls PG",
+        slug: "girls-pg",
+        description: "Paying guest accommodation for women",
+      },
+      {
+        name: "Co-living Space",
+        slug: "co-living",
+        description: "Modern shared living spaces",
+      },
+      {
+        name: "Shared Room",
+        slug: "shared-room",
+        description: "Shared room accommodation",
+      },
+      {
+        name: "Single Room",
+        slug: "single-room",
+        description: "Private single room accommodation",
+      },
+      {
+        name: "Hostel",
+        slug: "hostel",
+        description: "Dormitory style accommodation",
+      },
     ],
   },
 ];
@@ -162,7 +314,7 @@ async function initializePropertyCategories() {
         if (existingCategory) {
           await categoriesCollection.updateOne(
             { slug: categoryData.slug },
-            { $set: categoryDoc }
+            { $set: categoryDoc },
           );
           categoryId = existingCategory._id.toString();
           console.log(`✅ Updated category: ${categoryData.name}`);
@@ -193,7 +345,7 @@ async function initializePropertyCategories() {
           if (existingSubcategory) {
             await subcategoriesCollection.updateOne(
               { categoryId, slug: subcategoryData.slug },
-              { $set: subcategoryDoc }
+              { $set: subcategoryDoc },
             );
           } else {
             await subcategoriesCollection.insertOne(subcategoryDoc);
@@ -202,12 +354,12 @@ async function initializePropertyCategories() {
         }
 
         console.log(
-          `   📋 ${categoryData.subcategories.length} subcategories for ${categoryData.name}`
+          `   📋 ${categoryData.subcategories.length} subcategories for ${categoryData.name}`,
         );
       } catch (error) {
         console.error(
           `❌ Error processing category ${categoryData.name}:`,
-          error
+          error,
         );
       }
     }
@@ -223,22 +375,23 @@ async function initializePropertyCategories() {
     // List all categories and their subcategories
     console.log("\n📋 Categories and Subcategories:");
     for (const categoryData of categories) {
-      const cat = await categoriesCollection.findOne({ slug: categoryData.slug });
+      const cat = await categoriesCollection.findOne({
+        slug: categoryData.slug,
+      });
       if (cat) {
         const subs = await subcategoriesCollection
           .find({ categoryId: cat._id.toString() })
           .toArray();
-        console.log(
-          `   ${categoryData.name} (${subs.length} subcategories)`
-        );
+        console.log(`   ${categoryData.name} (${subs.length} subcategories)`);
       }
     }
 
     console.log("\n" + "=".repeat(60));
     console.log("🎉 Property Categories Initialized Successfully!");
-    console.log(`✅ Categories created/updated: ${categoriesCreated || "all existing"}`);
+    console.log(
+      `✅ Categories created/updated: ${categoriesCreated || "all existing"}`,
+    );
     console.log(`✅ Subcategories created: ${subcategoriesCreated}`);
-
   } catch (error) {
     console.error("❌ Error initializing property categories:", error);
     throw error;
