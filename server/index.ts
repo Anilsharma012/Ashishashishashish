@@ -1266,6 +1266,9 @@ app.use("/api/payments/razorpay", requireBuyer, razorpayRoutes);
   
   // Public watermark settings (read-only, for display)
   app.get("/api/watermark-settings", getWatermarkSettings);
+
+  // Watermark application endpoint (public, for downloading watermarked images)
+  app.get("/api/watermark/apply", applyWatermark);
   
   app.post(
     "/api/admin/test-property",
