@@ -24,68 +24,124 @@ export default function PG() {
     fetchSubcategories();
   }, []);
 
+  const getFallbackSubcategories = (): Subcategory[] => [
+    {
+      id: "boys-pg",
+      name: "Boys PG",
+      slug: "boys-pg",
+      description: "PG accommodation for boys",
+      count: 0,
+    },
+    {
+      id: "girls-pg",
+      name: "Girls PG",
+      slug: "girls-pg",
+      description: "PG accommodation for girls",
+      count: 0,
+    },
+    {
+      id: "co-living",
+      name: "Co-living",
+      slug: "co-living",
+      description: "Co-living spaces",
+      count: 0,
+    },
+    {
+      id: "hostel",
+      name: "Hostel",
+      slug: "hostel",
+      description: "Hostel accommodation",
+      count: 0,
+    },
+    {
+      id: "shared-room",
+      name: "Shared Room",
+      slug: "shared-room",
+      description: "Shared room accommodation",
+      count: 0,
+    },
+    {
+      id: "single-room",
+      name: "Single Room",
+      slug: "single-room",
+      description: "Single room accommodation",
+      count: 0,
+    },
+  ];
+
   const fetchSubcategories = async () => {
     try {
       setLoading(true);
-      // Use public endpoint backed by admin data
       const apiResponse = await (window as any).api(
         "/categories/pg/subcategories",
       );
+
+      let fetchedSubcategories: Subcategory[] = [];
+
       if (apiResponse.ok && apiResponse.json?.success) {
-        setSubcategories(apiResponse.json.data || []);
+        fetchedSubcategories = apiResponse.json.data || [];
       } else {
         console.warn(
           "Subcategories API non-OK; using fallback",
           apiResponse.status,
           apiResponse.json?.error,
         );
+        fetchedSubcategories = getFallbackSubcategories();
       }
+
+      // Map slug to propertyType for API query
+      const getPropertyTypeForSlug = (slug: string): { propertyType?: string; subCategory?: string } => {
+        // All PG subcategories map to propertyType="pg"
+        return { propertyType: "pg", subCategory: slug };
+      };
+
+      // Fetch live property counts for each subcategory
+      const subcategoriesWithCounts = await Promise.all(
+        fetchedSubcategories.map(async (sub) => {
+          try {
+            // Map slug to propertyType
+            const mapping = getPropertyTypeForSlug(sub.slug);
+
+            // Build query params
+            const params = new URLSearchParams();
+            params.append("priceType", "rent");
+            params.append("limit", "1");
+
+            if (mapping.propertyType) {
+              params.append("propertyType", mapping.propertyType);
+            }
+            if (mapping.subCategory) {
+              params.append("subCategory", mapping.subCategory);
+            }
+
+            const countResponse = await (window as any).api(
+              `/properties?${params}`,
+            );
+
+            let count = sub.count || 0;
+            if (
+              countResponse.ok &&
+              countResponse.json?.success &&
+              countResponse.json.data?.pagination
+            ) {
+              count = countResponse.json.data.pagination.total || 0;
+            }
+
+            return { ...sub, count };
+          } catch (error) {
+            console.error(
+              `Error fetching count for subcategory ${sub.slug}:`,
+              error,
+            );
+            return sub;
+          }
+        }),
+      );
+
+      setSubcategories(subcategoriesWithCounts);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
-      setSubcategories([
-        {
-          id: "boys-pg",
-          name: "Boys PG",
-          slug: "boys-pg",
-          description: "PG accommodation for boys",
-          count: 45,
-        },
-        {
-          id: "girls-pg",
-          name: "Girls PG",
-          slug: "girls-pg",
-          description: "PG accommodation for girls",
-          count: 38,
-        },
-        {
-          id: "co-living",
-          name: "Co-living",
-          slug: "co-living",
-          description: "Co-living spaces",
-          count: 22,
-        },
-        {
-          id: "hostel",
-          name: "Hostel",
-          slug: "hostel",
-          description: "Hostel accommodation",
-          count: 15,
-        },
-        {
-          id: "shared-room",
-          name: "Shared Room",
-          slug: "shared-room",
-          description: "Shared room accommodation",
-          count: 52,
-        },
-        {
-          id: "single-room",
-          name: "Single Room",
-          slug: "single-room",
-          description: "Single room accommodation",
-          count: 34,
-        },
-      ]);
+      setSubcategories(getFallbackSubcategories());
     } finally {
       setLoading(false);
     }
