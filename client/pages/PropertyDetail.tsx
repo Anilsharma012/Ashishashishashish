@@ -692,21 +692,30 @@ const handleStartChat = async () => {
           <div className="lg:col-span-2 space-y-6">
             {images.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-4 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setImageModalOpen(true)}>
                   <ImageViewerWithZoom
                     images={images}
                     currentIndex={currentImageIndex}
                     onIndexChange={setCurrentImageIndex}
                     title={property.title}
                     watermarkEnabled={watermarkSettings?.enabled ?? true}
-                    watermarkPosition={watermarkSettings?.position ?? "bottom-right"}
-                    watermarkOpacity={watermarkSettings?.opacity ?? 0.8}
+                    watermarkPosition={watermarkSettings?.position ?? "pattern"}
+                    watermarkOpacity={watermarkSettings?.opacity ?? 0.25}
                     watermarkText={watermarkSettings?.text ?? "ashishproperties.in"}
                     allowDownload={true}
                   />
                 </CardContent>
               </Card>
             )}
+
+            {/* Full-screen Image Modal */}
+            <ImageModal
+              isOpen={imageModalOpen}
+              onClose={() => setImageModalOpen(false)}
+              images={images.map((img) => (typeof img === "string" ? img : img.url || "/placeholder.png"))}
+              initialIndex={currentImageIndex}
+              title={property.title}
+            />
 
             {/* Property Details */}
             <Card>
