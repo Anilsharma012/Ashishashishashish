@@ -177,6 +177,7 @@ export default function PropertyDetail() {
   const [likeBusy, setLikeBusy] = useState(false);
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
   const [startingChat, setStartingChat] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const buildAuthHeaders = () => {
     const h: Record<string, string> = { "Content-Type": "application/json" };
