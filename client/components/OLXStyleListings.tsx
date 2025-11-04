@@ -376,15 +376,21 @@ export default function OLXStyleListings() {
                 onClick={() => handlePropertyClick(property)}
                 className="bg-white border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all active:scale-95"
               >
-                <div className="relative aspect-square md:aspect-[4/3]">
+                <div className="relative aspect-square md:aspect-[4/3] group">
                   <img
                     src={firstImage(property)}
                     alt={property.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover cursor-pointer group-hover:opacity-90 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPropertyForZoom(property);
+                      setImageModalOpen(true);
+                    }}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = "/placeholder.png";
                     }}
                   />
+                  <Watermark variant="badge" small text="ashishproperties.in" />
                   {property.premium && (
                     <div className="absolute top-2 left-2 bg-gradient-to-r from-orange-500 to-red-600 text-white px-2 py-1 rounded-md text-[10px] md:text-xs font-bold shadow">
                       AP Premium
@@ -393,10 +399,22 @@ export default function OLXStyleListings() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      setSelectedPropertyForZoom(property);
+                      setImageModalOpen(true);
+                    }}
+                    className="absolute top-2 right-2 md:top-3 md:right-3 w-8 h-8 md:w-9 md:h-9 bg-white/90 hover:bg-white rounded-full flex items-center justify-center transition opacity-0 group-hover:opacity-100"
+                    aria-label="zoom image"
+                    title="Click to zoom"
+                  >
+                    <ZoomIn className="h-4 w-4 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       if (!isBusy) toggleFavorite(property._id);
                     }}
                     disabled={isBusy}
-                    className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition disabled:opacity-60"
+                    className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-8 h-8 md:w-9 md:h-9 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition disabled:opacity-60"
                     aria-label="favorite"
                     title={isFav ? "Remove from wishlist" : "Save to wishlist"}
                   >
