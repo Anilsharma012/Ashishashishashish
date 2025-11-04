@@ -10,7 +10,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 const PWAInstallButton = () => {
   const { toast } = useToast();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -40,7 +41,8 @@ const PWAInstallButton = () => {
       const dismissed = localStorage.getItem("pwa-install-dismissed");
       if (dismissed) {
         const dismissedTime = parseInt(dismissed);
-        const hoursSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60);
+        const hoursSinceDismissed =
+          (Date.now() - dismissedTime) / (1000 * 60 * 60);
 
         // Show again after 24 hours
         if (hoursSinceDismissed < 24) {
@@ -77,7 +79,8 @@ const PWAInstallButton = () => {
       localStorage.removeItem("pwa-install-dismissed");
       toast({
         title: "Success! 🎉",
-        description: "App installed successfully. Look for it on your home screen.",
+        description:
+          "App installed successfully. Look for it on your home screen.",
       });
     };
 
@@ -85,7 +88,10 @@ const PWAInstallButton = () => {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, [toast]);
@@ -94,7 +100,8 @@ const PWAInstallButton = () => {
     if (!deferredPrompt) {
       toast({
         title: "Not available on this browser",
-        description: "PWA installation not supported. Try Chrome or Samsung Internet on Android.",
+        description:
+          "PWA installation not supported. Try Chrome or Samsung Internet on Android.",
         variant: "destructive",
       });
       return;
@@ -158,8 +165,12 @@ const PWAInstallButton = () => {
                 <Smartphone className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-sm md:text-base font-bold">Install Ashish Properties</h3>
-                <p className="text-xs text-red-100">Quick access on home screen</p>
+                <h3 className="text-sm md:text-base font-bold">
+                  Install Ashish Properties
+                </h3>
+                <p className="text-xs text-red-100">
+                  Quick access on home screen
+                </p>
               </div>
             </div>
             <button

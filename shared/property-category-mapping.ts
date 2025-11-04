@@ -3,8 +3,18 @@
  * Maps propertyType values to their display categories and pages
  */
 
-export type PropertyType = "residential" | "commercial" | "plot" | "agricultural" | "pg";
-export type CategoryPage = "buy" | "rent" | "commercial" | "agricultural" | "pg";
+export type PropertyType =
+  | "residential"
+  | "commercial"
+  | "plot"
+  | "agricultural"
+  | "pg";
+export type CategoryPage =
+  | "buy"
+  | "rent"
+  | "commercial"
+  | "agricultural"
+  | "pg";
 
 export interface CategoryMapping {
   propertyType: PropertyType;
@@ -16,43 +26,48 @@ export interface CategoryMapping {
 /**
  * Master mapping of property types to categories
  */
-export const PROPERTY_TYPE_TO_CATEGORY: Record<PropertyType, CategoryMapping> = {
-  residential: {
-    propertyType: "residential",
-    categoryPage: "buy",
-    displayName: "Residential",
-    description: "Apartments, houses, villas, and other residential properties",
-  },
-  commercial: {
-    propertyType: "commercial",
-    categoryPage: "commercial",
-    displayName: "Commercial",
-    description: "Shops, offices, warehouses, and commercial spaces",
-  },
-  plot: {
-    propertyType: "plot",
-    categoryPage: "buy",
-    displayName: "Plot/Land",
-    description: "Residential plots, commercial plots, and land",
-  },
-  agricultural: {
-    propertyType: "agricultural",
-    categoryPage: "agricultural",
-    displayName: "Agricultural",
-    description: "Agricultural land, farms, and farmhouses",
-  },
-  pg: {
-    propertyType: "pg",
-    categoryPage: "pg",
-    displayName: "PG/Hostel",
-    description: "Paying guest accommodations and hostels",
-  },
-};
+export const PROPERTY_TYPE_TO_CATEGORY: Record<PropertyType, CategoryMapping> =
+  {
+    residential: {
+      propertyType: "residential",
+      categoryPage: "buy",
+      displayName: "Residential",
+      description:
+        "Apartments, houses, villas, and other residential properties",
+    },
+    commercial: {
+      propertyType: "commercial",
+      categoryPage: "commercial",
+      displayName: "Commercial",
+      description: "Shops, offices, warehouses, and commercial spaces",
+    },
+    plot: {
+      propertyType: "plot",
+      categoryPage: "buy",
+      displayName: "Plot/Land",
+      description: "Residential plots, commercial plots, and land",
+    },
+    agricultural: {
+      propertyType: "agricultural",
+      categoryPage: "agricultural",
+      displayName: "Agricultural",
+      description: "Agricultural land, farms, and farmhouses",
+    },
+    pg: {
+      propertyType: "pg",
+      categoryPage: "pg",
+      displayName: "PG/Hostel",
+      description: "Paying guest accommodations and hostels",
+    },
+  };
 
 /**
  * Sub-categories for each property type
  */
-export const PROPERTY_SUBCATEGORIES: Record<PropertyType, Array<{ value: string; label: string }>> = {
+export const PROPERTY_SUBCATEGORIES: Record<
+  PropertyType,
+  Array<{ value: string; label: string }>
+> = {
   residential: [
     { value: "1bhk", label: "1 BHK Apartment" },
     { value: "2bhk", label: "2 BHK Apartment" },
@@ -103,7 +118,9 @@ export const PROPERTY_SUBCATEGORIES: Record<PropertyType, Array<{ value: string;
 /**
  * Get the category page for a property type
  */
-export function getCategoryPageForPropertyType(propertyType: string): CategoryPage {
+export function getCategoryPageForPropertyType(
+  propertyType: string,
+): CategoryPage {
   const mapping = PROPERTY_TYPE_TO_CATEGORY[propertyType as PropertyType];
   return mapping?.categoryPage || "buy"; // Default to 'buy'
 }
@@ -126,33 +143,38 @@ export function getSubCategoriesForPropertyType(propertyType: string) {
 /**
  * Check if a property should be displayed on a specific category page
  */
-export function shouldDisplayPropertyOnPage(propertyType: string, currentPage: CategoryPage): boolean {
+export function shouldDisplayPropertyOnPage(
+  propertyType: string,
+  currentPage: CategoryPage,
+): boolean {
   const categoryPage = getCategoryPageForPropertyType(propertyType);
-  
+
   // Handle special case: both residential and plot types show on /buy
   if (currentPage === "buy") {
     return propertyType === "residential" || propertyType === "plot";
   }
-  
+
   return categoryPage === currentPage;
 }
 
 /**
  * Get all property types that display on a specific category page
  */
-export function getPropertyTypesForCategoryPage(categoryPage: CategoryPage): PropertyType[] {
+export function getPropertyTypesForCategoryPage(
+  categoryPage: CategoryPage,
+): PropertyType[] {
   const types: PropertyType[] = [];
-  
+
   for (const [propType, mapping] of Object.entries(PROPERTY_TYPE_TO_CATEGORY)) {
     if (mapping.categoryPage === categoryPage) {
       types.push(propType as PropertyType);
     }
   }
-  
+
   // Special handling for 'buy' page - includes both residential and plot
   if (categoryPage === "buy") {
     return ["residential", "plot"] as PropertyType[];
   }
-  
+
   return types;
 }

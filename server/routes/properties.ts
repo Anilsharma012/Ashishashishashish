@@ -11,12 +11,16 @@ import fs from "fs";
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const uploadPath = path.join(process.cwd(), "uploads", "properties");
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+    if (!fs.existsSync(uploadPath))
+      fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (_req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`,
+    );
   },
 });
 
@@ -35,9 +39,22 @@ export const getProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const {
-      propertyType, subCategory, priceType, category, sector, mohalla, landmark,
-      minPrice, maxPrice, bedrooms, bathrooms, minArea, maxArea,
-      sortBy = "date_desc", page = "1", limit = "20",
+      propertyType,
+      subCategory,
+      priceType,
+      category,
+      sector,
+      mohalla,
+      landmark,
+      minPrice,
+      maxPrice,
+      bedrooms,
+      bathrooms,
+      minArea,
+      maxArea,
+      sortBy = "date_desc",
+      page = "1",
+      limit = "20",
     } = req.query;
 
     const filter: any = { status: "active", approvalStatus: "approved" };
@@ -50,7 +67,7 @@ export const getProperties: RequestHandler = async (req, res) => {
           // Both residential and plot types for sale
           filter.$or = [
             { propertyType: "residential", priceType: "sale" },
-            { propertyType: "plot", priceType: "sale" }
+            { propertyType: "plot", priceType: "sale" },
           ];
           break;
         case "rent":
@@ -79,8 +96,10 @@ export const getProperties: RequestHandler = async (req, res) => {
     if (sector) filter["location.sector"] = sector;
     if (mohalla) filter["location.mohalla"] = mohalla;
     if (landmark) filter["location.landmark"] = landmark;
-    if (bedrooms) filter["specifications.bedrooms"] = parseInt(String(bedrooms));
-    if (bathrooms) filter["specifications.bathrooms"] = parseInt(String(bathrooms));
+    if (bedrooms)
+      filter["specifications.bedrooms"] = parseInt(String(bedrooms));
+    if (bathrooms)
+      filter["specifications.bathrooms"] = parseInt(String(bathrooms));
 
     if (minPrice || maxPrice) {
       filter.price = {};
@@ -90,38 +109,64 @@ export const getProperties: RequestHandler = async (req, res) => {
 
     if (minArea || maxArea) {
       filter["specifications.area"] = {};
-      if (minArea) filter["specifications.area"].$gte = parseInt(String(minArea));
-      if (maxArea) filter["specifications.area"].$lte = parseInt(String(maxArea));
+      if (minArea)
+        filter["specifications.area"].$gte = parseInt(String(minArea));
+      if (maxArea)
+        filter["specifications.area"].$lte = parseInt(String(maxArea));
     }
 
     const sort: any = {};
     switch (sortBy) {
-      case "price_asc": sort.price = 1; break;
-      case "price_desc": sort.price = -1; break;
-      case "area_desc": sort["specifications.area"] = -1; break;
-      case "date_asc": sort.createdAt = 1; break;
-      default: sort.createdAt = -1;
+      case "price_asc":
+        sort.price = 1;
+        break;
+      case "price_desc":
+        sort.price = -1;
+        break;
+      case "area_desc":
+        sort["specifications.area"] = -1;
+        break;
+      case "date_asc":
+        sort.createdAt = 1;
+        break;
+      default:
+        sort.createdAt = -1;
     }
 
     const pageNum = parseInt(String(page));
     const limitNum = parseInt(String(limit));
     const skip = (pageNum - 1) * limitNum;
 
-    const properties = await db.collection("properties")
-      .find(filter).sort(sort).skip(skip).limit(limitNum).toArray();
+    const properties = await db
+      .collection("properties")
+      .find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNum)
+      .toArray();
     const total = await db.collection("properties").countDocuments(filter);
 
-    const response: ApiResponse<{properties: Property[]; pagination:{page:number;limit:number;total:number;pages:number}}> = {
+    const response: ApiResponse<{
+      properties: Property[];
+      pagination: { page: number; limit: number; total: number; pages: number };
+    }> = {
       success: true,
       data: {
         properties: properties as unknown as Property[],
-        pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
       },
     };
     res.json(response);
   } catch (error) {
     console.error("Error fetching properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch properties" });
   }
 };
 
@@ -130,14 +175,27 @@ export const getPropertyById: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const { id } = req.params;
-    if (!ObjectId.isValid(id)) return res.status(400).json({ success: false, error: "Invalid property ID" });
+    if (!ObjectId.isValid(id))
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
 
-    const property = await db.collection("properties").findOne({ _id: new ObjectId(id) });
-    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+    const property = await db
+      .collection("properties")
+      .findOne({ _id: new ObjectId(id) });
+    if (!property)
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
-    await db.collection("properties").updateOne({ _id: new ObjectId(id) }, { $inc: { views: 1 } });
+    await db
+      .collection("properties")
+      .updateOne({ _id: new ObjectId(id) }, { $inc: { views: 1 } });
 
-    const response: ApiResponse<Property> = { success: true, data: property as unknown as Property };
+    const response: ApiResponse<Property> = {
+      success: true,
+      data: property as unknown as Property,
+    };
     res.json(response);
   } catch (error) {
     console.error("Error fetching property:", error);
@@ -150,17 +208,28 @@ export const createProperty: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
 
     // images
     const images: string[] = [];
     if (Array.isArray((req as any).files)) {
-      (req as any).files.forEach((file: any) => images.push(`/uploads/properties/${file.filename}`));
+      (req as any).files.forEach((file: any) =>
+        images.push(`/uploads/properties/${file.filename}`),
+      );
     }
 
     // safe parse
     const safeParse = <T = any>(v: any, fallback: any = {}): T => {
-      if (typeof v === "string") { try { return JSON.parse(v); } catch { return fallback; } }
+      if (typeof v === "string") {
+        try {
+          return JSON.parse(v);
+        } catch {
+          return fallback;
+        }
+      }
       return (v ?? fallback) as T;
     };
     const location = safeParse(req.body.location, {});
@@ -170,13 +239,19 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     const providedPremium = req.body.premium === "true";
     const contactVisibleFlag =
-      typeof req.body.contactVisible === "string" ? req.body.contactVisible === "true" : !!req.body.contactVisible;
+      typeof req.body.contactVisible === "string"
+        ? req.body.contactVisible === "true"
+        : !!req.body.contactVisible;
 
     const packageId: string | undefined =
-      typeof req.body.packageId === "string" && req.body.packageId.trim() ? req.body.packageId.trim() : undefined;
+      typeof req.body.packageId === "string" && req.body.packageId.trim()
+        ? req.body.packageId.trim()
+        : undefined;
 
     // moderation defaults
-    const approvalStatus: "pending" | "pending_approval" = packageId ? "pending_approval" : "pending";
+    const approvalStatus: "pending" | "pending_approval" = packageId
+      ? "pending_approval"
+      : "pending";
     const status: "inactive" | "active" = "inactive"; // 🔒 NEVER live at creation
 
     const toInt = (v: any): number | undefined => {
@@ -262,7 +337,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     console.error("Error creating property:", error);
-    res.status(500).json({ success: false, error: "Failed to create property" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to create property" });
   }
 };
 
@@ -270,15 +347,23 @@ export const createProperty: RequestHandler = async (req, res) => {
 export const getFeaturedProperties: RequestHandler = async (_req, res) => {
   try {
     const db = getDatabase();
-    const properties = await db.collection("properties")
+    const properties = await db
+      .collection("properties")
       .find({ status: "active", featured: true, approvalStatus: "approved" })
-      .sort({ createdAt: -1 }).limit(10).toArray();
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .toArray();
 
-    const response: ApiResponse<Property[]> = { success: true, data: properties as unknown as Property[] };
+    const response: ApiResponse<Property[]> = {
+      success: true,
+      data: properties as unknown as Property[],
+    };
     res.json(response);
   } catch (error) {
     console.error("Error fetching featured properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch featured properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch featured properties" });
   }
 };
 
@@ -287,17 +372,27 @@ export const getUserProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
 
-    const properties = await db.collection("properties")
+    const properties = await db
+      .collection("properties")
       .find({ ownerId: String(userId) })
-      .sort({ createdAt: -1 }).toArray();
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    const response: ApiResponse<Property[]> = { success: true, data: properties as unknown as Property[] };
+    const response: ApiResponse<Property[]> = {
+      success: true,
+      data: properties as unknown as Property[],
+    };
     res.json(response);
   } catch (error) {
     console.error("Error fetching user properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch user properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch user properties" });
   }
 };
 
@@ -307,14 +402,18 @@ export const getUserNotifications: RequestHandler = async (req, res) => {
     const userId = (req as any).userId;
     const db = getDatabase();
 
-    const notifications = await db.collection("user_notifications")
+    const notifications = await db
+      .collection("user_notifications")
       .find({ userId: new ObjectId(String(userId)) })
-      .sort({ createdAt: -1 }).toArray();
+      .sort({ createdAt: -1 })
+      .toArray();
 
     res.json({ success: true, data: notifications });
   } catch (error) {
     console.error("Error fetching user notifications:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch notifications" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch notifications" });
   }
 };
 
@@ -325,18 +424,27 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
     const db = getDatabase();
 
     if (!ObjectId.isValid(String(notificationId))) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
-    await db.collection("user_notifications").updateOne(
-      { _id: new ObjectId(String(notificationId)), userId: new ObjectId(String(userId)) },
-      { $set: { isRead: true, readAt: new Date() } }
-    );
+    await db
+      .collection("user_notifications")
+      .updateOne(
+        {
+          _id: new ObjectId(String(notificationId)),
+          userId: new ObjectId(String(userId)),
+        },
+        { $set: { isRead: true, readAt: new Date() } },
+      );
 
     res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    res.status(500).json({ success: false, error: "Failed to mark notification as read" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to mark notification as read" });
   }
 };
 
@@ -347,7 +455,9 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
     const db = getDatabase();
 
     if (!ObjectId.isValid(String(notificationId))) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
     await db.collection("user_notifications").deleteOne({
@@ -358,7 +468,9 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
     res.json({ success: true, message: "Notification deleted" });
   } catch (error) {
     console.error("Error deleting notification:", error);
-    res.status(500).json({ success: false, error: "Failed to delete notification" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to delete notification" });
   }
 };
 
@@ -366,15 +478,22 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
 export const getPendingProperties: RequestHandler = async (_req, res) => {
   try {
     const db = getDatabase();
-    const properties = await db.collection("properties")
+    const properties = await db
+      .collection("properties")
       .find({ approvalStatus: { $in: ["pending", "pending_approval"] } })
-      .sort({ createdAt: -1 }).toArray();
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    const response: ApiResponse<Property[]> = { success: true, data: properties as unknown as Property[] };
+    const response: ApiResponse<Property[]> = {
+      success: true,
+      data: properties as unknown as Property[],
+    };
     res.json(response);
   } catch (error) {
     console.error("Error fetching pending properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch pending properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch pending properties" });
   }
 };
 
@@ -391,15 +510,22 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     const adminId = (req as any).userId;
 
     if (!ObjectId.isValid(String(id))) {
-      return res.status(400).json({ success: false, error: "Invalid property ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
     }
     if (!["approved", "rejected"].includes(String(approvalStatus))) {
-      return res.status(400).json({ success: false, error: "Invalid approval status" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid approval status" });
     }
 
     const _id = new ObjectId(String(id));
     const property = await db.collection("properties").findOne({ _id });
-    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+    if (!property)
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
     const now = new Date();
     const updateData: any = { approvalStatus, updatedAt: now };
@@ -427,6 +553,8 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error updating property approval:", error);
-    res.status(500).json({ success: false, error: "Failed to update property approval" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update property approval" });
   }
 };

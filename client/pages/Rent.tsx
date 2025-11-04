@@ -33,7 +33,7 @@ export default function Rent() {
 
       // Fetch subcategories from API
       const apiResponse = await (window as any).api(
-        "/categories/rent/subcategories"
+        "/categories/rent/subcategories",
       );
 
       let fetchedSubcategories: Subcategory[] = [];
@@ -44,7 +44,7 @@ export default function Rent() {
         console.warn(
           "Subcategories API returned non-OK; using fallback",
           apiResponse.status,
-          apiResponse.json?.error
+          apiResponse.json?.error,
         );
         // Fallback subcategories
         fetchedSubcategories = getFallbackSubcategories();
@@ -56,7 +56,7 @@ export default function Rent() {
           try {
             // Query properties by subCategory for rent
             const countResponse = await (window as any).api(
-              `/properties?category=rent&subCategory=${sub.slug}&limit=1`
+              `/properties?category=rent&subCategory=${sub.slug}&limit=1`,
             );
 
             let count = sub.count || 0;
@@ -72,11 +72,11 @@ export default function Rent() {
           } catch (error) {
             console.error(
               `Error fetching count for subcategory ${sub.slug}:`,
-              error
+              error,
             );
             return sub;
           }
-        })
+        }),
       );
 
       setSubcategories(subcategoriesWithCounts);
@@ -219,7 +219,8 @@ export default function Rent() {
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-900">
                 💡 <strong>Live Property Updates:</strong> Approved rental
-                properties appear instantly in this category based on their type.
+                properties appear instantly in this category based on their
+                type.
               </p>
             </div>
           )}

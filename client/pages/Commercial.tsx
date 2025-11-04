@@ -33,7 +33,7 @@ export default function Commercial() {
 
       // Fetch subcategories from API
       const apiResponse = await (window as any).api(
-        "/categories/commercial/subcategories"
+        "/categories/commercial/subcategories",
       );
 
       let fetchedSubcategories: Subcategory[] = [];
@@ -44,7 +44,7 @@ export default function Commercial() {
         console.warn(
           "Subcategories API returned non-OK; using fallback",
           apiResponse.status,
-          apiResponse.json?.error
+          apiResponse.json?.error,
         );
         // Fallback subcategories
         fetchedSubcategories = getFallbackSubcategories();
@@ -56,7 +56,7 @@ export default function Commercial() {
           try {
             // Query properties by subCategory for commercial
             const countResponse = await (window as any).api(
-              `/properties?category=commercial&subCategory=${sub.slug}&limit=1`
+              `/properties?category=commercial&subCategory=${sub.slug}&limit=1`,
             );
 
             let count = sub.count || 0;
@@ -72,11 +72,11 @@ export default function Commercial() {
           } catch (error) {
             console.error(
               `Error fetching count for subcategory ${sub.slug}:`,
-              error
+              error,
             );
             return sub;
           }
-        })
+        }),
       );
 
       setSubcategories(subcategoriesWithCounts);
@@ -170,7 +170,8 @@ export default function Commercial() {
               Commercial Properties
             </h1>
             <p className="text-gray-600">
-              Find commercial spaces for your business - Shops, Offices, Warehouses & more
+              Find commercial spaces for your business - Shops, Offices,
+              Warehouses & more
             </p>
           </div>
 
@@ -206,7 +207,8 @@ export default function Commercial() {
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-900">
                 💡 <strong>Auto-Updated Listings:</strong> New commercial
-                properties are automatically displayed here after admin approval.
+                properties are automatically displayed here after admin
+                approval.
               </p>
             </div>
           )}

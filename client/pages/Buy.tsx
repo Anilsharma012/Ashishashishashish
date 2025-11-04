@@ -33,7 +33,7 @@ export default function Buy() {
 
       // Fetch subcategories from API
       const apiResponse = await (window as any).api(
-        "/categories/buy/subcategories"
+        "/categories/buy/subcategories",
       );
 
       let fetchedSubcategories: Subcategory[] = [];
@@ -44,7 +44,7 @@ export default function Buy() {
         console.warn(
           "Subcategories API returned non-OK; using fallback",
           apiResponse.status,
-          apiResponse.json?.error
+          apiResponse.json?.error,
         );
         // Fallback subcategories
         fetchedSubcategories = getFallbackSubcategories();
@@ -56,7 +56,7 @@ export default function Buy() {
           try {
             // Query properties by subCategory and category (buy includes residential + plot)
             const countResponse = await (window as any).api(
-              `/properties?category=buy&subCategory=${sub.slug}&limit=1`
+              `/properties?category=buy&subCategory=${sub.slug}&limit=1`,
             );
 
             let count = sub.count || 0;
@@ -72,11 +72,11 @@ export default function Buy() {
           } catch (error) {
             console.error(
               `Error fetching count for subcategory ${sub.slug}:`,
-              error
+              error,
             );
             return sub;
           }
-        })
+        }),
       );
 
       setSubcategories(subcategoriesWithCounts);
