@@ -519,6 +519,20 @@ export const sendPostCreatedNotification = async (propertyId: string, userId: st
 
     const db = getDatabase();
 
+    // Check if post created notification already exists for this property (deduplication)
+    const existingNotif = await db.collection("user_notifications").findOne({
+      userId: new ObjectId(userId),
+      type: "post_created",
+      createdAt: {
+        $gte: new Date(Date.now() - 60 * 60 * 1000), // Last hour
+      },
+    });
+
+    if (existingNotif) {
+      console.log(`⚠️ Post created notification already sent to user for this property, skipping`);
+      return true;
+    }
+
     // Create notification record in notifications collection
     const notificationData = {
       title: "Property Listed Successfully! 🎉",
