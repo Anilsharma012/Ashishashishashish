@@ -149,6 +149,44 @@ export default function CategoryProperties() {
     }
   };
 
+  const getPropertyTypeAndSubCategory = (
+    categoryName: string,
+    slugValue?: string,
+  ): { propertyType?: string; subCategory?: string } => {
+    if (!slugValue) return {};
+
+    const slugLower = slugValue.toLowerCase();
+
+    // Map slug to propertyType and subCategory
+    // For BHK apartments and houses
+    if (["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(slugLower)) {
+      return { propertyType: "residential", subCategory: slugLower };
+    }
+
+    // For plots
+    if (slugLower === "plot" || slugLower === "land" || slugLower.includes("plot")) {
+      return { propertyType: "plot" };
+    }
+
+    // For commercial
+    if (slugLower === "commercial" || slugLower === "office" || slugLower === "shop") {
+      return { propertyType: "commercial" };
+    }
+
+    // For agricultural
+    if (slugLower === "agricultural" || slugLower === "agriculture" || slugLower.includes("agriculture")) {
+      return { propertyType: "agricultural" };
+    }
+
+    // For PG
+    if (slugLower === "pg" || slugLower.includes("pg")) {
+      return { propertyType: "pg" };
+    }
+
+    // Fallback: treat slug as subCategory
+    return { subCategory: slugLower };
+  };
+
   const fetchProperties = async () => {
     try {
       setLoading(true);
@@ -177,15 +215,14 @@ export default function CategoryProperties() {
         params.append("propertyType", subcategory);
       }
 
-      // Handle slug from category page (e.g., /buy/commercial, /buy/residential)
-      // The slug here represents the propertyType or actual subCategory
+      // Handle slug from category page (e.g., /buy/commercial, /buy/1bhk, /buy/plot)
       if (slug) {
-        // Use slug as propertyType (for commercial, residential, plot, etc.)
-        // Don't send category parameter when we have a specific propertyType
-        params.append("propertyType", slug);
-        // Also add propertyType if we have subcategory
-        if (subcategory) {
-          params.append("propertyType", subcategory);
+        const mapping = getPropertyTypeAndSubCategory(currentCategory, slug);
+        if (mapping.propertyType) {
+          params.append("propertyType", mapping.propertyType);
+        }
+        if (mapping.subCategory) {
+          params.append("subCategory", mapping.subCategory);
         }
       }
 
