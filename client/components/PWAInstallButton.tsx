@@ -31,7 +31,7 @@ const PWAInstallButton = () => {
     // Check APK availability
     const checkAPK = async () => {
       try {
-        const response = await fetch("/api/app-info");
+        const response = await fetch("/api/app/info");
         const data = await response.json();
         if (data.success && data.data?.available) {
           setApkAvailable(true);
