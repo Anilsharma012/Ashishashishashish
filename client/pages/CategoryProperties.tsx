@@ -799,14 +799,13 @@ export default function CategoryProperties() {
                     }`}
                   >
                     <div
-                      className={`relative ${
+                      className={`relative group ${
                         viewMode === "grid"
                           ? "w-full h-48"
                           : "w-32 h-32 flex-shrink-0"
                       }`}
                     >
                       <img
-                        data-wm="1"
                         src={
                           property.coverImageUrl ??
                           property.images?.[0]?.url ??
@@ -814,21 +813,53 @@ export default function CategoryProperties() {
                           "/placeholder.png"
                         }
                         alt={property.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover cursor-pointer group-hover:opacity-90 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const images = Array.isArray(property.images)
+                            ? property.images.map((img) =>
+                                typeof img === "string" ? img : (img as any)?.url
+                              ).filter(Boolean)
+                            : [];
+                          if (images.length > 0) {
+                            setSelectedPropertyForZoom(property);
+                            setImageModalOpen(true);
+                          }
+                        }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = "/placeholder.png";
                         }}
                       />
+                      <Watermark variant="badge" small text="ashishproperties.in" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const images = Array.isArray(property.images)
+                            ? property.images.map((img) =>
+                                typeof img === "string" ? img : (img as any)?.url
+                              ).filter(Boolean)
+                            : [];
+                          if (images.length > 0) {
+                            setSelectedPropertyForZoom(property);
+                            setImageModalOpen(true);
+                          }
+                        }}
+                        className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition z-10"
+                        aria-label="Zoom image"
+                        title="Click to zoom"
+                      >
+                        <ZoomIn className="h-3.5 w-3.5 text-gray-700" />
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           // TODO: favorites toggle
                         }}
-                        className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-50"
+                        className="absolute top-2 right-10 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white opacity-0 group-hover:opacity-100 transition z-10"
                         aria-label="Save"
                       >
-                        <Heart className="h-4 w-4 text-gray-600" />
+                        <Heart className="h-3.5 w-3.5 text-gray-600" />
                       </button>
                     </div>
 
