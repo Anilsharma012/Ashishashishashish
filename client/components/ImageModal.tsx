@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  ZoomIn,
-  ZoomOut,
   X,
   ChevronLeft,
   ChevronRight,
