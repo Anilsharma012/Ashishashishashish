@@ -21,43 +21,130 @@ export default function Rent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSubcategories();
+    fetchSubcategoriesAndCounts();
   }, []);
 
-  const fetchSubcategories = async () => {
+  /**
+   * Fetch subcategories and live property counts for the rent category
+   */
+  const fetchSubcategoriesAndCounts = async () => {
     try {
       setLoading(true);
-      const apiResponse = await (window as any).api("/categories/rent/subcategories");
+
+      // Fetch subcategories from API
+      const apiResponse = await (window as any).api(
+        "/categories/rent/subcategories",
+      );
+
+      let fetchedSubcategories: Subcategory[] = [];
+
       if (apiResponse.ok && apiResponse.json?.success) {
-        setSubcategories(apiResponse.json.data || []);
+        fetchedSubcategories = apiResponse.json.data || [];
       } else {
-        console.warn("Subcategories API non-OK; using fallback", apiResponse.status, apiResponse.json?.error);
+        console.warn(
+          "Subcategories API returned non-OK; using fallback",
+          apiResponse.status,
+          apiResponse.json?.error,
+        );
+        // Fallback subcategories
+        fetchedSubcategories = getFallbackSubcategories();
       }
+
+      // Fetch live property counts for each subcategory
+      const subcategoriesWithCounts = await Promise.all(
+        fetchedSubcategories.map(async (sub) => {
+          try {
+            // Query properties by subCategory for rent
+            const countResponse = await (window as any).api(
+              `/properties?category=rent&subCategory=${sub.slug}&limit=1`,
+            );
+
+            let count = sub.count || 0;
+            if (
+              countResponse.ok &&
+              countResponse.json?.success &&
+              countResponse.json.data?.pagination
+            ) {
+              count = countResponse.json.data.pagination.total || 0;
+            }
+
+            return { ...sub, count };
+          } catch (error) {
+            console.error(
+              `Error fetching count for subcategory ${sub.slug}:`,
+              error,
+            );
+            return sub;
+          }
+        }),
+      );
+
+      setSubcategories(subcategoriesWithCounts);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
-      setSubcategories([
-        { id: "1bhk", name: "1 BHK", slug: "1bhk", description: "Single bedroom apartments", count: 25 },
-        { id: "2bhk", name: "2 BHK", slug: "2bhk", description: "Two bedroom apartments", count: 42 },
-        { id: "3bhk", name: "3 BHK", slug: "3bhk", description: "Three bedroom apartments", count: 31 },
-        { id: "4bhk", name: "4+ BHK", slug: "4bhk", description: "Four or more bedrooms", count: 12 },
-        { id: "villa", name: "Villa", slug: "villa", description: "Independent villas", count: 8 },
-        { id: "house", name: "Independent House", slug: "house", description: "Independent houses", count: 18 },
-        { id: "office", name: "Office Space", slug: "office", description: "Commercial office space", count: 15 },
-        { id: "shop", name: "Shop/Showroom", slug: "shop", description: "Retail spaces", count: 22 },
-      ]);
+      setSubcategories(getFallbackSubcategories());
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Fallback subcategories for rent page
+   * Residential properties for rent
+   */
+  const getFallbackSubcategories = (): Subcategory[] => [
+    {
+      id: "1bhk",
+      name: "1 BHK",
+      slug: "1bhk",
+      description: "Single bedroom apartments",
+      count: 0,
+    },
+    {
+      id: "2bhk",
+      name: "2 BHK",
+      slug: "2bhk",
+      description: "Two bedroom apartments",
+      count: 0,
+    },
+    {
+      id: "3bhk",
+      name: "3 BHK",
+      slug: "3bhk",
+      description: "Three bedroom apartments",
+      count: 0,
+    },
+    {
+      id: "4bhk",
+      name: "4+ BHK",
+      slug: "4bhk",
+      description: "Four or more bedrooms",
+      count: 0,
+    },
+    {
+      id: "villa",
+      name: "Villa",
+      slug: "villa",
+      description: "Independent villas",
+      count: 0,
+    },
+    {
+      id: "house",
+      name: "Independent House",
+      slug: "house",
+      description: "Independent houses",
+      count: 0,
+    },
+  ];
+
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    navigate(`/rent/${subcategory.slug}`);
+    // Navigate with category filter for rent
+    navigate(`/rent/${subcategory.slug}?category=rent&priceType=rent`);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        {/* Header ko upar rakhne ke liye high z-index */}
         <div className="relative z-50">
           <OLXStyleHeader />
         </div>
@@ -76,13 +163,11 @@ export default function Rent() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header always on top so clicks below are not blocked */}
       <div className="relative z-50">
         <OLXStyleHeader />
       </div>
 
       <main className="relative z-0 pb-20">
-        {/* Sticky CategoryBar with explicit z-index and solid bg to avoid transparent overlay issues */}
         <div
           className="
             sticky top-0 z-40
@@ -90,14 +175,17 @@ export default function Rent() {
             border-b border-gray-100
           "
         >
-          {/* IMPORTANT: ensure CategoryBar ke andar filter button par parent me kahin 'pointer-events: none' na ho */}
           <CategoryBar />
         </div>
 
         <div className="px-4 py-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Rent Properties</h1>
-            <p className="text-gray-600">Choose a property type to rent</p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Rent Properties
+            </h1>
+            <p className="text-gray-600">
+              Choose a property type to rent - Apartments, Houses & more
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -105,37 +193,41 @@ export default function Rent() {
               <button
                 key={subcategory._id || subcategory.id || subcategory.slug}
                 onClick={() => handleSubcategoryClick(subcategory)}
-                className="
-                  subcat-card cursor-pointer
-                  bg-white border border-gray-200 rounded-lg p-4 text-left
-                  hover:bg-gray-50 transition-colors shadow-sm
-                  focus:outline-none focus:ring-2 focus:ring-[#C70000]/30
-                "
+                className="subcat-card bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
                 data-testid="subcat-card"
-                aria-label={`Open ${subcategory.name}`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 text-lg">{subcategory.name}</h3>
+                  <h3 className="font-semibold text-gray-900 text-lg">
+                    {subcategory.name}
+                  </h3>
                   <ChevronRight className="h-5 w-5 text-gray-400" />
                 </div>
-                <p className="text-sm text-gray-500 mb-3">{subcategory.description}</p>
-                {typeof subcategory.count === "number" && (
-                  <span className="text-xs bg-[#C70000] text-white px-2 py-1 rounded-full">
+                <p className="text-sm text-gray-500 mb-3">
+                  {subcategory.description}
+                </p>
+                {subcategory.count !== undefined && (
+                  <span className="text-xs bg-[#C70000] text-white px-2 py-1 rounded-full font-medium">
                     {subcategory.count} properties
                   </span>
                 )}
               </button>
             ))}
           </div>
+
+          {/* Note about auto-categorization */}
+          {subcategories.length > 0 && (
+            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-900">
+                💡 <strong>Live Property Updates:</strong> Approved rental
+                properties appear instantly in this category based on their
+                type.
+              </p>
+            </div>
+          )}
         </div>
       </main>
 
-      {/* Bottom nav ko lower z-index pe rakho so it doesn't create an invisible overlay over content */}
-      <div className="relative z-10">
-        <BottomNavigation />
-      </div>
-
-      {/* Footer page flow ke andar; ensure it is not position:fixed with full overlay */}
+      <BottomNavigation />
       <StaticFooter />
     </div>
   );

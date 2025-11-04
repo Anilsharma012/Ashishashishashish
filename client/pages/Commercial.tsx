@@ -15,7 +15,7 @@ interface Subcategory {
   count?: number;
 }
 
-export default function Buy() {
+export default function Commercial() {
   const navigate = useNavigate();
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function Buy() {
   }, []);
 
   /**
-   * Fetch subcategories and live property counts for the buy category
+   * Fetch subcategories and live property counts for commercial category
    */
   const fetchSubcategoriesAndCounts = async () => {
     try {
@@ -33,7 +33,7 @@ export default function Buy() {
 
       // Fetch subcategories from API
       const apiResponse = await (window as any).api(
-        "/categories/buy/subcategories",
+        "/categories/commercial/subcategories",
       );
 
       let fetchedSubcategories: Subcategory[] = [];
@@ -54,9 +54,9 @@ export default function Buy() {
       const subcategoriesWithCounts = await Promise.all(
         fetchedSubcategories.map(async (sub) => {
           try {
-            // Query properties by subCategory and category (buy includes residential + plot)
+            // Query properties by subCategory for commercial
             const countResponse = await (window as any).api(
-              `/properties?category=buy&subCategory=${sub.slug}&limit=1`,
+              `/properties?category=commercial&subCategory=${sub.slug}&limit=1`,
             );
 
             let count = sub.count || 0;
@@ -89,71 +89,56 @@ export default function Buy() {
   };
 
   /**
-   * Fallback subcategories for buy page
-   * Includes both residential and plot types
+   * Fallback subcategories for commercial page
    */
   const getFallbackSubcategories = (): Subcategory[] => [
     {
-      id: "1bhk",
-      name: "1 BHK",
-      slug: "1bhk",
-      description: "Single bedroom apartments",
+      id: "shop",
+      name: "Shop",
+      slug: "shop",
+      description: "Retail shops and storefronts",
       count: 0,
     },
     {
-      id: "2bhk",
-      name: "2 BHK",
-      slug: "2bhk",
-      description: "Two bedroom apartments",
+      id: "office",
+      name: "Office Space",
+      slug: "office",
+      description: "Office spaces and suites",
       count: 0,
     },
     {
-      id: "3bhk",
-      name: "3 BHK",
-      slug: "3bhk",
-      description: "Three bedroom apartments",
+      id: "showroom",
+      name: "Showroom",
+      slug: "showroom",
+      description: "Showrooms and display spaces",
       count: 0,
     },
     {
-      id: "4bhk",
-      name: "4+ BHK",
-      slug: "4bhk",
-      description: "Four or more bedrooms",
+      id: "warehouse",
+      name: "Warehouse",
+      slug: "warehouse",
+      description: "Warehouses and storage spaces",
       count: 0,
     },
     {
-      id: "villa",
-      name: "Villa",
-      slug: "villa",
-      description: "Independent villas",
+      id: "factory",
+      name: "Factory",
+      slug: "factory",
+      description: "Industrial factories and units",
       count: 0,
     },
     {
-      id: "house",
-      name: "Independent House",
-      slug: "house",
-      description: "Independent houses",
-      count: 0,
-    },
-    {
-      id: "plot",
-      name: "Plot/Land",
-      slug: "plot",
-      description: "Plots and land",
-      count: 0,
-    },
-    {
-      id: "commercial",
-      name: "Commercial",
-      slug: "commercial",
-      description: "Commercial properties",
+      id: "restaurant-space",
+      name: "Restaurant Space",
+      slug: "restaurant-space",
+      description: "Food and beverage spaces",
       count: 0,
     },
   ];
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    // Navigate to /{category}/{subcategory} with category filter
-    navigate(`/buy/${subcategory.slug}?category=buy`);
+    // Navigate with category filter for commercial
+    navigate(`/commercial/${subcategory.slug}?category=commercial`);
   };
 
   if (loading) {
@@ -182,10 +167,11 @@ export default function Buy() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Buy Properties
+              Commercial Properties
             </h1>
             <p className="text-gray-600">
-              Choose a property type to buy - Apartments, Houses, Plots & more
+              Find commercial spaces for your business - Shops, Offices,
+              Warehouses & more
             </p>
           </div>
 
@@ -220,9 +206,9 @@ export default function Buy() {
           {subcategories.length > 0 && (
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-900">
-                💡 <strong>New Properties Auto-Displayed:</strong> When a seller
-                posts a property and it's approved by admin, it automatically
-                appears in the correct category based on its type.
+                💡 <strong>Auto-Updated Listings:</strong> New commercial
+                properties are automatically displayed here after admin
+                approval.
               </p>
             </div>
           )}
