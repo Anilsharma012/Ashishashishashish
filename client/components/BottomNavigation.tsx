@@ -94,8 +94,8 @@ export default function BottomNavigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
-      <div className="flex items-center justify-around h-16 relative">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg pointer-events-auto touch-manipulation">
+      <div className="flex items-center justify-around h-16 relative pointer-events-auto">
         {navItems.map((item, index) => {
           if (index === 2) {
             // Center add button (FAB) with "Post ad" text
