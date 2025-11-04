@@ -21,9 +21,9 @@ export default function Watermark({
     return (
       <div
         className={[
-          "pointer-events-none select-none absolute bottom-1 left-1/2 -translate-x-1/2 z-10",
-          small ? "text-[10px] px-2 py-0.5" : "text-xs px-2 py-0.5",
-          "font-semibold text-white rounded bg-black/40 shadow",
+          "pointer-events-none select-none absolute bottom-2 right-2 z-10",
+          small ? "text-[11px] px-3 py-1.5" : "text-sm px-3 py-1.5",
+          "font-bold text-white rounded bg-gray-800/70 shadow-lg",
           className,
         ].join(" ")}
       >
