@@ -44,21 +44,14 @@ export default function ImageModal({
 
   if (!isOpen) return null;
 
-  const handleZoomIn = () => {
-    setZoomLevel((prev) => Math.min(prev + 0.25, 4));
-  };
-
-  const handleZoomOut = () => {
-    const newZoom = Math.max(zoomLevel - 0.25, 1);
-    setZoomLevel(newZoom);
-    if (newZoom === 1) {
+  const handleToggleZoom = () => {
+    if (zoomLevel > 1) {
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
+    } else {
+      setZoomLevel(2);
       setPosition({ x: 0, y: 0 });
     }
-  };
-
-  const handleResetZoom = () => {
-    setZoomLevel(1);
-    setPosition({ x: 0, y: 0 });
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
