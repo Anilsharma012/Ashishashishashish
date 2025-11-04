@@ -15,11 +15,26 @@ type AnyUser = {
 
 export default function BottomNavigation() {
   const location = useLocation();
+  const navigate = useNavigate();
   const unreadCount = useUnreadCount();
   const { isAuthenticated, user } = useAuth() as {
     isAuthenticated: boolean;
     user?: AnyUser | null;
   };
+
+  // Handle post button click for better mobile support
+  const handlePostAdClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isAuthenticated) {
+        navigate("/post-property");
+      } else {
+        navigate(`/auth?returnTo=${encodeURIComponent("/post-property")}`);
+      }
+    },
+    [isAuthenticated, navigate]
+  );
 
   // --- Chat target: /chats (optional ?id=...)
   const chatHref = React.useMemo(() => {
