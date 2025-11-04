@@ -445,6 +445,138 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
   }
 };
 
+// Send post created notification to user (internal function)
+export const sendPostCreatedNotification = async (propertyId: string, userId: string, propertyTitle: string) => {
+  try {
+    console.log(`📧 Sending post created notification for property: ${propertyTitle}`);
+
+    const db = getDatabase();
+
+    // Create notification record in notifications collection
+    const notificationData = {
+      title: "Property Listed Successfully! 🎉",
+      message: `Your property "${propertyTitle}" has been submitted for review. Once approved by our team, it will be visible to buyers.`,
+      type: "both",
+      audience: "specific",
+      specificUsers: [userId],
+      sentAt: new Date(),
+      recipientCount: 1,
+      deliveredCount: 0,
+      status: "sent",
+      createdBy: "system",
+      metadata: {
+        emailsSent: 0,
+        pushNotificationsSent: 0,
+        failedDeliveries: 0,
+        errorDetails: [],
+      },
+    };
+
+    // Insert notification record
+    const result = await db.collection("notifications").insertOne(notificationData);
+    const notificationId = result.insertedId;
+
+    // Create user notification entry for dashboard display
+    const userNotification = {
+      userId: new ObjectId(userId),
+      notificationId: notificationId,
+      title: notificationData.title,
+      message: notificationData.message,
+      type: "post_created",
+      delivered: true,
+      read: false,
+      deliveredAt: new Date(),
+      createdAt: new Date(),
+    };
+
+    await db.collection("user_notifications").insertOne(userNotification);
+
+    // Update notification as delivered
+    await db.collection("notifications").updateOne(
+      { _id: notificationId },
+      {
+        $set: {
+          deliveredCount: 1,
+          "metadata.emailsSent": 1,
+          "metadata.pushNotificationsSent": 1,
+        }
+      }
+    );
+
+    console.log(`✅ Post created notification sent successfully`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Failed to send post created notification:`, error);
+    return false;
+  }
+};
+
+// Send post rejected notification to user (internal function)
+export const sendPostRejectedNotification = async (propertyId: string, userId: string, propertyTitle: string, rejectionReason: string) => {
+  try {
+    console.log(`📧 Sending post rejected notification for property: ${propertyTitle}`);
+
+    const db = getDatabase();
+
+    // Create notification record in notifications collection
+    const notificationData = {
+      title: "Property Listing Rejected ❌",
+      message: `Your property "${propertyTitle}" was not approved. Reason: ${rejectionReason}. Please review and resubmit.`,
+      type: "both",
+      audience: "specific",
+      specificUsers: [userId],
+      sentAt: new Date(),
+      recipientCount: 1,
+      deliveredCount: 0,
+      status: "sent",
+      createdBy: "system",
+      metadata: {
+        emailsSent: 0,
+        pushNotificationsSent: 0,
+        failedDeliveries: 0,
+        errorDetails: [],
+      },
+    };
+
+    // Insert notification record
+    const result = await db.collection("notifications").insertOne(notificationData);
+    const notificationId = result.insertedId;
+
+    // Create user notification entry for dashboard display
+    const userNotification = {
+      userId: new ObjectId(userId),
+      notificationId: notificationId,
+      title: notificationData.title,
+      message: notificationData.message,
+      type: "post_rejected",
+      delivered: true,
+      read: false,
+      deliveredAt: new Date(),
+      createdAt: new Date(),
+    };
+
+    await db.collection("user_notifications").insertOne(userNotification);
+
+    // Update notification as delivered
+    await db.collection("notifications").updateOne(
+      { _id: notificationId },
+      {
+        $set: {
+          deliveredCount: 1,
+          "metadata.emailsSent": 1,
+          "metadata.pushNotificationsSent": 1,
+        }
+      }
+    );
+
+    console.log(`✅ Post rejected notification sent successfully`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Failed to send post rejected notification:`, error);
+    return false;
+  }
+};
+
 // Delete a notification by ID
 export const deleteNotification: RequestHandler = async (req, res) => {
   try {
@@ -470,7 +602,3 @@ export const deleteNotification: RequestHandler = async (req, res) => {
     });
   }
 };
-
-
-
-
