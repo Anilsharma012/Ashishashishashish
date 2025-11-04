@@ -9,9 +9,12 @@ import {
   Heart,
   Phone,
   X,
+  ZoomIn,
 } from "lucide-react";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
+import ImageModal from "../components/ImageModal";
+import Watermark from "../components/Watermark";
 import { Button } from "../components/ui/button";
 import { Property } from "@shared/types";
 
