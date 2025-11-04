@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MapPin, Clock, Send } from "lucide-react";
+import { Heart, MapPin, Clock, Send, ZoomIn } from "lucide-react";
 import PropertyLoadingSkeleton from "./PropertyLoadingSkeleton";
 import EnquiryModal from "./EnquiryModal";
+import ImageModal from "./ImageModal";
+import Watermark from "./Watermark";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -325,7 +327,7 @@ export default function OLXStyleListings() {
 
   /* -------------------------- UI helpers ------------------------ */
   // ✅ FULL DIGITS — no Cr/L/K, no commas
-  const formatPrice = (price: number) => `₹ ${Math.round(Number(price || 0)).toString()}`;
+  const formatPrice = (price: number) => `�� ${Math.round(Number(price || 0)).toString()}`;
 
   const getTimeAgo = (iso: string) => {
     const now = new Date();
