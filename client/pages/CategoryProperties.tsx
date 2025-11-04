@@ -217,9 +217,6 @@ export default function CategoryProperties() {
       setLoading(true);
       const params = new URLSearchParams();
 
-      // Always include status=active and approvalStatus=approved
-      params.append("status", "active");
-
       // Handle category and subcategory from URL
       const currentCategory = getCurrentCategory();
 
@@ -264,19 +261,26 @@ export default function CategoryProperties() {
 
       // Add filter parameters
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
+        if (value && key !== "sortBy") params.append(key, value);
       });
 
-      const apiResponse = await (window as any).api(`properties?${params}`);
+      // Add sorting
+      if (filters.sortBy) params.append("sortBy", filters.sortBy);
+
+      const apiResponse = await (window as any).api(`properties?${params.toString()}`);
       const data = apiResponse.ok
         ? apiResponse.json
         : { success: false, error: "Failed to fetch properties" };
 
-      if (data.success) {
-        setProperties(data.data.properties || []);
+      if (data.success && data.data) {
+        setProperties(Array.isArray(data.data.properties) ? data.data.properties : []);
+      } else {
+        console.warn("API response:", data);
+        setProperties([]);
       }
     } catch (error) {
       console.error("Error fetching properties:", error);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
