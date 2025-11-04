@@ -271,47 +271,14 @@ export async function seedDefaultData() {
     console.error("Ad packages seeding error:", e?.message || e);
   }
 
-  // 4. Categories
+  // 4. Categories - Initialize with proper property type mapping
   try {
-    const existingCategories = await db
-      .collection("categories")
-      .countDocuments();
-    if (existingCategories === 0) {
-      const defaultCategories = [
-        {
-          name: "Residential",
-          slug: "residential",
-          icon: "🏠",
-          description: "Residential properties",
-          subcategories: [
-            { name: "1 BHK", slug: "1bhk", icon: "🏠" },
-            { name: "2 BHK", slug: "2bhk", icon: "🏠" },
-          ],
-          order: 1,
-          active: true,
-        },
-        {
-          name: "Commercial",
-          slug: "commercial",
-          icon: "🏢",
-          description: "Commercial properties",
-          subcategories: [
-            { name: "Office", slug: "office", icon: "🏢" },
-            { name: "Shop", slug: "shop", icon: "🏪" },
-          ],
-          order: 2,
-          active: true,
-        },
-      ];
-      const r = await db.collection("categories").insertMany(defaultCategories);
-      resultSummary.categoriesCreated =
-        r.insertedCount || defaultCategories.length;
-      console.log("✅ Categories seeded");
-    } else {
-      console.log("✅ Categories already present");
+    const categoriesInitialized = await initializePropertyCategories();
+    if (categoriesInitialized) {
+      resultSummary.categoriesCreated = true;
     }
   } catch (e: any) {
-    console.error("Categories seeding error:", e?.message || e);
+    console.error("Categories initialization error:", e?.message || e);
   }
 
   console.log("🎉 Seeding complete", resultSummary);
