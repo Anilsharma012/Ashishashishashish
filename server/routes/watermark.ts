@@ -8,7 +8,12 @@ import axios from "axios";
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "watermark");
+      const uploadDir = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        "watermark",
+      );
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -21,7 +26,9 @@ const upload = multer({
   }),
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|svg/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase(),
+    );
     const mimetype = allowedTypes.test(file.mimetype);
     if (mimetype && extname) {
       cb(null, true);
@@ -35,7 +42,9 @@ const upload = multer({
 export const getWatermarkSettings: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    const settings = await db.collection("settings").findOne({ type: "watermark" });
+    const settings = await db
+      .collection("settings")
+      .findOne({ type: "watermark" });
 
     const defaultSettings = {
       enabled: true,
@@ -73,11 +82,13 @@ export const updateWatermarkSettings: RequestHandler = async (req, res) => {
       updatedAt: new Date(),
     };
 
-    await db.collection("settings").updateOne(
-      { type: "watermark" },
-      { $set: settingsData },
-      { upsert: true }
-    );
+    await db
+      .collection("settings")
+      .updateOne(
+        { type: "watermark" },
+        { $set: settingsData },
+        { upsert: true },
+      );
 
     res.json({
       success: true,
@@ -149,8 +160,7 @@ export const applyWatermark: RequestHandler = async (req, res) => {
       .collection("settings")
       .findOne({ type: "watermark" });
 
-    const watermarkText =
-      (settings?.text as string) || "ashishproperties.in";
+    const watermarkText = (settings?.text as string) || "ashishproperties.in";
     const watermarkOpacity = (settings?.opacity as number) || 0.8;
 
     // For now, return the original image with a text watermark added via header
@@ -159,7 +169,7 @@ export const applyWatermark: RequestHandler = async (req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store");
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=ashishproperties-image.jpg"
+      "attachment; filename=ashishproperties-image.jpg",
     );
 
     // Send the image buffer as is (watermark is visible in the viewer)

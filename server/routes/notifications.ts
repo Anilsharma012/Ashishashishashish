@@ -84,10 +84,16 @@ export const getAllNotifications: RequestHandler = async (req, res) => {
 export const sendNotification: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    const { title, message, type, audience, specificUsers, scheduledTime } = req.body;
+    const { title, message, type, audience, specificUsers, scheduledTime } =
+      req.body;
     const createdBy = (req as any).userId;
 
-    console.log("📨 Sending notification:", { title, type, audience, specificUsers: specificUsers?.length });
+    console.log("📨 Sending notification:", {
+      title,
+      type,
+      audience,
+      specificUsers: specificUsers?.length,
+    });
 
     // Validate required fields
     if (!title || !message) {
@@ -103,7 +109,9 @@ export const sendNotification: RequestHandler = async (req, res) => {
 
     if (audience === "specific" && specificUsers && specificUsers.length > 0) {
       // Specific users selected
-      recipientFilter = { _id: { $in: specificUsers.map((id: string) => new ObjectId(id)) } };
+      recipientFilter = {
+        _id: { $in: specificUsers.map((id: string) => new ObjectId(id)) },
+      };
     } else {
       // Audience-based targeting
       switch (audience) {
@@ -126,10 +134,14 @@ export const sendNotification: RequestHandler = async (req, res) => {
     // Get recipients
     recipients = await db
       .collection("users")
-      .find(recipientFilter, { projection: { _id: 1, name: 1, email: 1, userType: 1 } })
+      .find(recipientFilter, {
+        projection: { _id: 1, name: 1, email: 1, userType: 1 },
+      })
       .toArray();
 
-    console.log(`📊 Found ${recipients.length} recipients for audience: ${audience}`);
+    console.log(
+      `📊 Found ${recipients.length} recipients for audience: ${audience}`,
+    );
 
     if (recipients.length === 0) {
       return res.status(400).json({
@@ -159,7 +171,9 @@ export const sendNotification: RequestHandler = async (req, res) => {
       },
     };
 
-    const result = await db.collection("notifications").insertOne(notificationData);
+    const result = await db
+      .collection("notifications")
+      .insertOne(notificationData);
     const notificationId = result.insertedId;
 
     // If not scheduled, send immediately
@@ -202,13 +216,20 @@ export const sendNotification: RequestHandler = async (req, res) => {
             if (type === "push" || type === "both") {
               // In a real implementation, you would integrate with a push notification service
               // For now, we'll just log it
-              console.log(`🔔 Push notification sent to ${recipient.name}: ${title}`);
+              console.log(
+                `🔔 Push notification sent to ${recipient.name}: ${title}`,
+              );
               pushNotificationsSent++;
             }
           } catch (recipientError) {
-            console.error(`Failed to send to ${recipient.email}:`, recipientError);
+            console.error(
+              `Failed to send to ${recipient.email}:`,
+              recipientError,
+            );
             failedDeliveries++;
-            errorDetails.push(`Failed to send to ${recipient.email}: ${recipientError}`);
+            errorDetails.push(
+              `Failed to send to ${recipient.email}: ${recipientError}`,
+            );
           }
         }
 
@@ -218,7 +239,8 @@ export const sendNotification: RequestHandler = async (req, res) => {
           {
             $set: {
               deliveredCount: emailsSent + pushNotificationsSent,
-              status: failedDeliveries === recipients.length ? "failed" : "sent",
+              status:
+                failedDeliveries === recipients.length ? "failed" : "sent",
               metadata: {
                 emailsSent,
                 pushNotificationsSent,
@@ -226,10 +248,12 @@ export const sendNotification: RequestHandler = async (req, res) => {
                 errorDetails,
               },
             },
-          }
+          },
         );
 
-        console.log(`✅ Notification sent successfully: ${emailsSent + pushNotificationsSent} delivered, ${failedDeliveries} failed`);
+        console.log(
+          `✅ Notification sent successfully: ${emailsSent + pushNotificationsSent} delivered, ${failedDeliveries} failed`,
+        );
       } catch (sendError) {
         console.error("Error sending notifications:", sendError);
         // Update notification status to failed
@@ -245,7 +269,7 @@ export const sendNotification: RequestHandler = async (req, res) => {
                 errorDetails: [`Sending failed: ${sendError}`],
               },
             },
-          }
+          },
         );
       }
     }
@@ -261,7 +285,7 @@ export const sendNotification: RequestHandler = async (req, res) => {
         recipientCount: recipients.length,
         status: scheduledTime ? "scheduled" : "sent",
       },
-      message: scheduledTime 
+      message: scheduledTime
         ? `Notification scheduled for ${recipients.length} recipients`
         : `Notification sent to ${recipients.length} recipients`,
     };
@@ -298,14 +322,14 @@ export const getUsers: RequestHandler = async (req, res) => {
 
     const users = await db
       .collection("users")
-      .find(filter, { 
-        projection: { 
-          _id: 1, 
-          name: 1, 
-          email: 1, 
+      .find(filter, {
+        projection: {
+          _id: 1,
+          name: 1,
+          email: 1,
           userType: 1,
-          createdAt: 1 
-        } 
+          createdAt: 1,
+        },
       })
       .sort({ name: 1 })
       .limit(100) // Limit for performance
@@ -379,9 +403,15 @@ export const getNotificationById: RequestHandler = async (req, res) => {
 
 // Send welcome notification to new users (internal function)
 // Creates 2 notifications for new users (one welcome, one onboarding tip)
-export const sendWelcomeNotification = async (userId: string, userName: string, userType: string) => {
+export const sendWelcomeNotification = async (
+  userId: string,
+  userName: string,
+  userType: string,
+) => {
   try {
-    console.log(`🎉 Sending welcome notifications to new ${userType}: ${userName} (${userId})`);
+    console.log(
+      `🎉 Sending welcome notifications to new ${userType}: ${userName} (${userId})`,
+    );
 
     const db = getDatabase();
 
@@ -392,12 +422,14 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
     });
 
     if (existingWelcome) {
-      console.log(`⚠️ Welcome notification already sent to ${userName}, skipping`);
+      console.log(
+        `⚠️ Welcome notification already sent to ${userName}, skipping`,
+      );
       return true;
     }
 
     // NOTIFICATION 1: Welcome message
-    const welcomeMessage = `Welcome to POSTTRR, ${userName}! 🏠 We're excited to have you join our property community. Start exploring properties and connect with verified ${userType === 'buyer' ? 'sellers' : 'buyers'} in your area.`;
+    const welcomeMessage = `Welcome to POSTTRR, ${userName}! 🏠 We're excited to have you join our property community. Start exploring properties and connect with verified ${userType === "buyer" ? "sellers" : "buyers"} in your area.`;
 
     const welcomeNotificationData: Omit<NotificationData, "_id"> = {
       title: `Welcome to POSTTRR! 🏠`,
@@ -419,7 +451,9 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
     };
 
     // Insert first notification
-    const result1 = await db.collection("notifications").insertOne(welcomeNotificationData);
+    const result1 = await db
+      .collection("notifications")
+      .insertOne(welcomeNotificationData);
     const notificationId1 = result1.insertedId;
 
     // Create user notification entry for dashboard display
@@ -445,14 +479,15 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
           deliveredCount: 1,
           "metadata.emailsSent": 1,
           "metadata.pushNotificationsSent": 1,
-        }
-      }
+        },
+      },
     );
 
     // NOTIFICATION 2: Quick start guide/onboarding tip
-    const startMessage = userType === 'seller'
-      ? `📋 Get started: Complete your profile, upload quality photos, and set competitive prices to attract buyers.`
-      : `🔍 Get started: Set your property preferences in Settings to receive personalized recommendations.`;
+    const startMessage =
+      userType === "seller"
+        ? `📋 Get started: Complete your profile, upload quality photos, and set competitive prices to attract buyers.`
+        : `🔍 Get started: Set your property preferences in Settings to receive personalized recommendations.`;
 
     const startNotificationData: Omit<NotificationData, "_id"> = {
       title: `📋 Quick Start Guide`,
@@ -474,7 +509,9 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
     };
 
     // Insert second notification
-    const result2 = await db.collection("notifications").insertOne(startNotificationData);
+    const result2 = await db
+      .collection("notifications")
+      .insertOne(startNotificationData);
     const notificationId2 = result2.insertedId;
 
     // Create second user notification entry
@@ -500,11 +537,13 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
           deliveredCount: 1,
           "metadata.emailsSent": 1,
           "metadata.pushNotificationsSent": 1,
-        }
-      }
+        },
+      },
     );
 
-    console.log(`✅ Welcome notifications (2) sent successfully to ${userName}`);
+    console.log(
+      `✅ Welcome notifications (2) sent successfully to ${userName}`,
+    );
     return true;
   } catch (error) {
     console.error(`❌ Failed to send welcome notification:`, error);
@@ -513,9 +552,15 @@ export const sendWelcomeNotification = async (userId: string, userName: string, 
 };
 
 // Send post created notification to user (internal function)
-export const sendPostCreatedNotification = async (propertyId: string, userId: string, propertyTitle: string) => {
+export const sendPostCreatedNotification = async (
+  propertyId: string,
+  userId: string,
+  propertyTitle: string,
+) => {
   try {
-    console.log(`📧 Sending post created notification for property: ${propertyTitle}`);
+    console.log(
+      `📧 Sending post created notification for property: ${propertyTitle}`,
+    );
 
     const db = getDatabase();
 
@@ -529,7 +574,9 @@ export const sendPostCreatedNotification = async (propertyId: string, userId: st
     });
 
     if (existingNotif) {
-      console.log(`⚠️ Post created notification already sent to user for this property, skipping`);
+      console.log(
+        `⚠️ Post created notification already sent to user for this property, skipping`,
+      );
       return true;
     }
 
@@ -554,7 +601,9 @@ export const sendPostCreatedNotification = async (propertyId: string, userId: st
     };
 
     // Insert notification record
-    const result = await db.collection("notifications").insertOne(notificationData);
+    const result = await db
+      .collection("notifications")
+      .insertOne(notificationData);
     const notificationId = result.insertedId;
 
     // Create user notification entry for dashboard display
@@ -580,8 +629,8 @@ export const sendPostCreatedNotification = async (propertyId: string, userId: st
           deliveredCount: 1,
           "metadata.emailsSent": 1,
           "metadata.pushNotificationsSent": 1,
-        }
-      }
+        },
+      },
     );
 
     console.log(`✅ Post created notification sent successfully`);
@@ -593,9 +642,16 @@ export const sendPostCreatedNotification = async (propertyId: string, userId: st
 };
 
 // Send post rejected notification to user (internal function)
-export const sendPostRejectedNotification = async (propertyId: string, userId: string, propertyTitle: string, rejectionReason: string) => {
+export const sendPostRejectedNotification = async (
+  propertyId: string,
+  userId: string,
+  propertyTitle: string,
+  rejectionReason: string,
+) => {
   try {
-    console.log(`📧 Sending post rejected notification for property: ${propertyTitle}`);
+    console.log(
+      `📧 Sending post rejected notification for property: ${propertyTitle}`,
+    );
 
     const db = getDatabase();
 
@@ -609,7 +665,9 @@ export const sendPostRejectedNotification = async (propertyId: string, userId: s
     });
 
     if (existingNotif) {
-      console.log(`⚠️ Post rejected notification already sent to user for this property, skipping`);
+      console.log(
+        `⚠️ Post rejected notification already sent to user for this property, skipping`,
+      );
       return true;
     }
 
@@ -634,7 +692,9 @@ export const sendPostRejectedNotification = async (propertyId: string, userId: s
     };
 
     // Insert notification record
-    const result = await db.collection("notifications").insertOne(notificationData);
+    const result = await db
+      .collection("notifications")
+      .insertOne(notificationData);
     const notificationId = result.insertedId;
 
     // Create user notification entry for dashboard display
@@ -660,8 +720,8 @@ export const sendPostRejectedNotification = async (propertyId: string, userId: s
           deliveredCount: 1,
           "metadata.emailsSent": 1,
           "metadata.pushNotificationsSent": 1,
-        }
-      }
+        },
+      },
     );
 
     console.log(`✅ Post rejected notification sent successfully`);
@@ -679,14 +739,18 @@ export const deleteNotification: RequestHandler = async (req, res) => {
     const { id } = req.params;
 
     if (!ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
     // Delete from main notifications collection (if admin removes)
     await db.collection("notifications").deleteOne({ _id: new ObjectId(id) });
 
     // Also delete user-specific notification logs (if exist)
-    await db.collection("user_notifications").deleteMany({ notificationId: new ObjectId(id) });
+    await db
+      .collection("user_notifications")
+      .deleteMany({ notificationId: new ObjectId(id) });
 
     res.json({ success: true, message: "Notification deleted successfully" });
   } catch (error) {

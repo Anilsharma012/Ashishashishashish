@@ -22,9 +22,10 @@ const PWAInstallButton = () => {
   useEffect(() => {
     // Check if mobile device
     const checkMobile = () => {
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
+      const isMobileDevice =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
       setIsMobile(isMobileDevice);
     };
 
@@ -194,12 +195,8 @@ const PWAInstallButton = () => {
                 <Download className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-sm md:text-base font-bold">
-                  Download APK
-                </h3>
-                <p className="text-xs text-red-100">
-                  Android app available
-                </p>
+                <h3 className="text-sm md:text-base font-bold">Download APK</h3>
+                <p className="text-xs text-red-100">Android app available</p>
               </div>
             </div>
             <button

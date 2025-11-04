@@ -6,7 +6,10 @@ import { ObjectId } from "mongodb";
 import multer, { FileFilterCallback } from "multer";
 import path from "path";
 import fs from "fs";
-import { sendPostCreatedNotification, sendPostRejectedNotification } from "./notifications";
+import {
+  sendPostCreatedNotification,
+  sendPostRejectedNotification,
+} from "./notifications";
 
 /* ========================= Multer (image uploads) ========================= */
 const storage = multer.diskStorage({
@@ -334,10 +337,13 @@ export const createProperty: RequestHandler = async (req, res) => {
       await sendPostCreatedNotification(
         result.insertedId.toString(),
         String(userId),
-        propertyData.title
+        propertyData.title,
       );
     } catch (e) {
-      console.warn("Post created notification failed:", (e as any)?.message || e);
+      console.warn(
+        "Post created notification failed:",
+        (e as any)?.message || e,
+      );
     }
 
     const response: ApiResponse<{ _id: string }> = {
@@ -441,15 +447,13 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Invalid notification ID" });
     }
 
-    await db
-      .collection("user_notifications")
-      .updateOne(
-        {
-          _id: new ObjectId(String(notificationId)),
-          userId: new ObjectId(String(userId)),
-        },
-        { $set: { isRead: true, readAt: new Date() } },
-      );
+    await db.collection("user_notifications").updateOne(
+      {
+        _id: new ObjectId(String(notificationId)),
+        userId: new ObjectId(String(userId)),
+      },
+      { $set: { isRead: true, readAt: new Date() } },
+    );
 
     res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {
@@ -566,10 +570,13 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
           String(_id),
           String(property.ownerId),
           property.title,
-          reason
+          reason,
         );
       } catch (e) {
-        console.warn("Post rejected notification failed:", (e as any)?.message || e);
+        console.warn(
+          "Post rejected notification failed:",
+          (e as any)?.message || e,
+        );
       }
     }
 

@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ZoomIn, ZoomOut, Download, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ZoomIn,
+  ZoomOut,
+  Download,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import Watermark from "./Watermark";
 
@@ -87,7 +94,9 @@ export default function ImageViewerWithZoom({
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(`/api/watermark/apply?imageUrl=${encodeURIComponent(currentImage)}`);
+      const response = await fetch(
+        `/api/watermark/apply?imageUrl=${encodeURIComponent(currentImage)}`,
+      );
       if (!response.ok) throw new Error("Failed to generate watermarked image");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -168,7 +177,8 @@ export default function ImageViewerWithZoom({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         style={{
-          cursor: zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+          cursor:
+            zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "default",
         }}
       >
         <img
@@ -186,7 +196,11 @@ export default function ImageViewerWithZoom({
         {watermarkEnabled && (
           <>
             {watermarkPosition === "pattern" && (
-              <Watermark variant="pattern" opacity={watermarkOpacity} angle={-45} />
+              <Watermark
+                variant="pattern"
+                opacity={watermarkOpacity}
+                angle={-45}
+              />
             )}
             {watermarkPosition === "center" && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
