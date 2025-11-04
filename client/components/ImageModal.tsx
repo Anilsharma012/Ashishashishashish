@@ -160,36 +160,9 @@ export default function ImageModal({
           <Button
             size="sm"
             variant="ghost"
-            onClick={handleZoomIn}
-            disabled={zoomLevel >= 4}
-            className="text-white hover:bg-white/20"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleZoomOut}
-            disabled={zoomLevel <= 1}
-            className="text-white hover:bg-white/20"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          {zoomLevel > 1 && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleResetZoom}
-              className="text-white hover:bg-white/20"
-            >
-              Reset
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
             onClick={handleDownload}
             className="text-white hover:bg-white/20"
+            title="Download with watermark"
           >
             <Download className="h-4 w-4" />
           </Button>
