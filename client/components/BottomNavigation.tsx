@@ -102,19 +102,17 @@ export default function BottomNavigation() {
             return (
               <div key="add-button" className="flex-1 flex justify-center">
                 <div className="flex flex-col items-center -translate-y-2">
-                  <Link
-                    to={
-                      isAuthenticated
-                        ? "/post-property"
-                        : `/auth?returnTo=${encodeURIComponent("/post-property")}`
-                    }
+                  <button
+                    onClick={handlePostAdClick}
+                    onTouchEnd={handlePostAdClick}
                     aria-label="Post ad"
-                    className="w-14 h-14 bg-[#C70000] rounded-full flex items-center justify-center shadow-lg hover:bg-[#A60000] transition-colors active:scale-95 border-2 border-white"
+                    className="w-14 h-14 bg-[#C70000] rounded-full flex items-center justify-center shadow-lg hover:bg-[#A60000] active:bg-[#A60000] active:scale-95 transition-colors border-2 border-white cursor-pointer touch-manipulation z-50"
+                    type="button"
                   >
                     <span className="text-white text-[10px] font-semibold leading-tight text-center tracking-wide">
                       Post ad
                     </span>
-                  </Link>
+                  </button>
                 </div>
               </div>
             );
