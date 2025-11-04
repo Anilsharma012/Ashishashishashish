@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Download, X, Smartphone, AndroidIcon } from "lucide-react";
+import { Download, X, Smartphone } from "lucide-react";
 import { Button } from "./ui/button";
 import { useToast } from "@/hooks/use-toast";
 
