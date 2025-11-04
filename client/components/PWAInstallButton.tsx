@@ -20,6 +20,27 @@ const PWAInstallButton = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Check if mobile device
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      setIsMobile(isMobileDevice);
+    };
+
+    // Check APK availability
+    const checkAPK = async () => {
+      try {
+        const response = await fetch("/api/app-info");
+        const data = await response.json();
+        if (data.success && data.data?.available) {
+          setApkAvailable(true);
+        }
+      } catch (error) {
+        console.error("Failed to check APK availability:", error);
+      }
+    };
+
     // Check if already installed
     const checkInstalled = () => {
       // Check if running in standalone mode (PWA is installed)
@@ -56,6 +77,8 @@ const PWAInstallButton = () => {
       }
     };
 
+    checkMobile();
+    checkAPK();
     checkInstalled();
   }, []);
 
