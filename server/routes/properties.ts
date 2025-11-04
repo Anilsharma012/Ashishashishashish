@@ -558,6 +558,21 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
 
     console.log("✅ ADMIN APPROVAL UPDATE", { id: id, set: updateData });
 
+    // Send rejection notification if property was rejected
+    if (approvalStatus === "rejected") {
+      try {
+        const reason = rejectionReason || "Does not meet our quality standards";
+        await sendPostRejectedNotification(
+          String(_id),
+          String(property.ownerId),
+          property.title,
+          reason
+        );
+      } catch (e) {
+        console.warn("Post rejected notification failed:", (e as any)?.message || e);
+      }
+    }
+
     const response: ApiResponse<{ message: string }> = {
       success: true,
       data: { message: `Property ${approvalStatus} successfully` },
