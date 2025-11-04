@@ -123,7 +123,7 @@ export default function BottomNavigation() {
             <Link
               key={item.label || index}
               to={item.to}
-              className={`flex-1 flex flex-col items-center justify-center py-2 relative transition-colors ${
+              className={`flex-1 flex flex-col items-center justify-center py-2 relative transition-colors touch-manipulation cursor-pointer active:opacity-80 pointer-events-auto ${
                 item.active ? "text-[#C70000]" : "text-gray-500 hover:text-gray-700"
               }`}
             >
