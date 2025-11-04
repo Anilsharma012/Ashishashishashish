@@ -87,12 +87,13 @@ export default function ImageViewerWithZoom({
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(currentImage);
+      const response = await fetch(`/api/watermark/apply?imageUrl=${encodeURIComponent(currentImage)}`);
+      if (!response.ok) throw new Error("Failed to generate watermarked image");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `property-image-${currentIndex + 1}.jpg`;
+      link.download = `ashishproperties-image-${currentIndex + 1}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
