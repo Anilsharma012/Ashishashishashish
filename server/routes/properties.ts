@@ -329,6 +329,17 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     const result = await db.collection("properties").insertOne(propertyData);
 
+    // Send post created notification
+    try {
+      await sendPostCreatedNotification(
+        result.insertedId.toString(),
+        String(userId),
+        propertyData.title
+      );
+    } catch (e) {
+      console.warn("Post created notification failed:", (e as any)?.message || e);
+    }
+
     const response: ApiResponse<{ _id: string }> = {
       success: true,
       data: { _id: result.insertedId.toString() },
