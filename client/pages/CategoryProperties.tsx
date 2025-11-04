@@ -930,6 +930,27 @@ export default function CategoryProperties() {
       </div>
 
       <BottomNavigation />
+
+      {/* Image Zoom Modal */}
+      {selectedPropertyForZoom && (
+        <ImageModal
+          isOpen={imageModalOpen}
+          onClose={() => {
+            setImageModalOpen(false);
+            setSelectedPropertyForZoom(null);
+          }}
+          images={
+            Array.isArray(selectedPropertyForZoom.images)
+              ? selectedPropertyForZoom.images
+                  .map((img) =>
+                    typeof img === "string" ? img : (img as any)?.url
+                  )
+                  .filter(Boolean)
+              : []
+          }
+          title={selectedPropertyForZoom.title}
+        />
+      )}
     </div>
   );
 }
