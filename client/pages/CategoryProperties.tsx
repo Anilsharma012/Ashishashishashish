@@ -177,9 +177,11 @@ export default function CategoryProperties() {
         params.append("propertyType", subcategory);
       }
 
-      // Handle subCategory from slug (e.g., /buy/residential/1bhk or /buy/commercial)
+      // Handle slug from category page (e.g., /buy/commercial, /buy/residential)
+      // The slug here represents the propertyType or actual subCategory
       if (slug) {
-        params.append("subCategory", slug);
+        // First, try to use it as propertyType (for commercial, residential, plot, etc.)
+        params.append("propertyType", slug);
         // Also add the category parameter when we have a slug
         params.append("category", currentCategory);
         // Also add propertyType if we have subcategory
