@@ -103,6 +103,7 @@ import {
   getWatermarkSettings,
   updateWatermarkSettings,
   uploadWatermarkLogo,
+  applyWatermark,
 } from "./routes/watermark";
 import {
   updateSiteSettings,
