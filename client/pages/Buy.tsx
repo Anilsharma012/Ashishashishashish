@@ -51,11 +51,17 @@ export default function Buy() {
       }
 
       // Map slug to propertyType for API query
-      const getPropertyTypeForSlug = (slug: string): { propertyType?: string; subCategory?: string } => {
+      const getPropertyTypeForSlug = (
+        slug: string,
+      ): { propertyType?: string; subCategory?: string } => {
         const slugLower = slug.toLowerCase();
 
         // Map slug to propertyType and subCategory
-        if (["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(slugLower)) {
+        if (
+          ["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(
+            slugLower,
+          )
+        ) {
           return { propertyType: "residential", subCategory: slugLower };
         }
 

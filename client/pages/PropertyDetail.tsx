@@ -420,116 +420,115 @@ export default function PropertyDetail() {
     window.open(url, "_blank");
   };
 
-const handleStartChat = async () => {
-  setStartingChat(true);
-  try {
-    const t =
-      token ||
-      localStorage.getItem("token") ||
-      localStorage.getItem("authToken") ||
-      localStorage.getItem("adminToken");
+  const handleStartChat = async () => {
+    setStartingChat(true);
+    try {
+      const t =
+        token ||
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("adminToken");
 
-    if (!t) {
-      navigate("/login", {
-        state: {
-          // use the actual current path so the redirect always works
-          redirectTo: location.pathname, 
-          message: "Please login to start chat",
-        },
-      });
-      return;
-    }
-
-    if (!property?._id) {
-      shadcnToast({
-        title: "Error",
-        description: "Property information not available",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // unified POST that mirrors apiGet/apiWrite behavior
-    const apiPost = async (path: string, body: any) => {
-      const anyWin = window as any;
-      if (anyWin.api) {
-        try {
-          // many wrappers expect raw body, not stringified
-          const r = await anyWin.api(path, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${t}`,
-            },
-            body,
-          });
-          // if r already looks like {ok,status,json}, keep it; else wrap it
-          if (typeof r === "object" && ("ok" in r || "json" in r)) return r;
-          return { ok: true, status: 200, json: r };
-        } catch (e) {
-          // fall through to fetch
-        }
+      if (!t) {
+        navigate("/login", {
+          state: {
+            // use the actual current path so the redirect always works
+            redirectTo: location.pathname,
+            message: "Please login to start chat",
+          },
+        });
+        return;
       }
-      const res = await fetch(`/api/${path}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${t}`,
-        },
-        credentials: "include",
-        body: JSON.stringify(body),
+
+      if (!property?._id) {
+        shadcnToast({
+          title: "Error",
+          description: "Property information not available",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // unified POST that mirrors apiGet/apiWrite behavior
+      const apiPost = async (path: string, body: any) => {
+        const anyWin = window as any;
+        if (anyWin.api) {
+          try {
+            // many wrappers expect raw body, not stringified
+            const r = await anyWin.api(path, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${t}`,
+              },
+              body,
+            });
+            // if r already looks like {ok,status,json}, keep it; else wrap it
+            if (typeof r === "object" && ("ok" in r || "json" in r)) return r;
+            return { ok: true, status: 200, json: r };
+          } catch (e) {
+            // fall through to fetch
+          }
+        }
+        const res = await fetch(`/api/${path}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${t}`,
+          },
+          credentials: "include",
+          body: JSON.stringify(body),
+        });
+        const json = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, json };
+      };
+
+      // be liberal in what we accept back from the API
+      const extractConvId = (raw: any): string | null => {
+        const j = raw?.json ?? raw;
+        const d = j?.data ?? j;
+        return (
+          d?._id ||
+          d?.conversationId ||
+          d?.conversation?._id ||
+          j?.conversationId ||
+          j?._id ||
+          null
+        );
+      };
+
+      // try find-or-create first; fallback to plain create
+      let res = await apiPost("conversations/find-or-create", {
+        propertyId: property._id,
       });
-      const json = await res.json().catch(() => ({}));
-      return { ok: res.ok, status: res.status, json };
-    };
+      if (!res?.ok || res?.json?.success === false) {
+        res = await apiPost("conversations", { propertyId: property._id });
+      }
 
-    // be liberal in what we accept back from the API
-    const extractConvId = (raw: any): string | null => {
-      const j = raw?.json ?? raw;
-      const d = j?.data ?? j;
-      return (
-        d?._id ||
-        d?.conversationId ||
-        d?.conversation?._id ||
-        j?.conversationId ||
-        j?._id ||
-        null
-      );
-    };
+      const convId = extractConvId(res);
+      if (!convId) {
+        shadcnToast({
+          title: "Error",
+          description:
+            res?.json?.error || "Invalid conversation id. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    // try find-or-create first; fallback to plain create
-    let res = await apiPost("conversations/find-or-create", {
-      propertyId: property._id,
-    });
-    if (!res?.ok || res?.json?.success === false) {
-      res = await apiPost("conversations", { propertyId: property._id });
-    }
-
-    const convId = extractConvId(res);
-    if (!convId) {
+      // your route seems singular; keep it unless your router uses /conversations/:id
+      navigate(`/conversation/${convId}`);
+    } catch (error) {
+      console.error("Error starting chat:", error);
       shadcnToast({
         title: "Error",
-        description:
-          res?.json?.error || "Invalid conversation id. Please try again.",
+        description: "Failed to start chat. Please try again.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setStartingChat(false);
     }
-
-    // your route seems singular; keep it unless your router uses /conversations/:id
-    navigate(`/conversation/${convId}`);
-  } catch (error) {
-    console.error("Error starting chat:", error);
-    shadcnToast({
-      title: "Error",
-      description: "Failed to start chat. Please try again.",
-      variant: "destructive",
-    });
-  } finally {
-    setStartingChat(false);
-  }
-};
-
+  };
 
   const nextImage = () => {
     if (property?.images)
@@ -546,7 +545,7 @@ const handleStartChat = async () => {
 
   const handleShare = async () => {
     const shareData = {
-      title: property?.title || 'Property Listing',
+      title: property?.title || "Property Listing",
       text: `Check out this property: ${property?.title}`,
       url: window.location.href,
     };
@@ -554,15 +553,15 @@ const handleStartChat = async () => {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        notify('Shared successfully!');
+        notify("Shared successfully!");
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        notify('Link copied to clipboard!');
+        notify("Link copied to clipboard!");
       }
     } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
+      if ((error as Error).name !== "AbortError") {
         await navigator.clipboard.writeText(window.location.href);
-        notify('Link copied to clipboard!');
+        notify("Link copied to clipboard!");
       }
     }
   };
@@ -583,11 +582,11 @@ const handleStartChat = async () => {
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
-    
+
     if (isLeftSwipe) {
       nextImage();
     } else if (isRightSwipe) {
@@ -692,7 +691,10 @@ const handleStartChat = async () => {
           <div className="lg:col-span-2 space-y-6">
             {images.length > 0 && (
               <Card>
-                <CardContent className="p-4 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setImageModalOpen(true)}>
+                <CardContent
+                  className="p-4 cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => setImageModalOpen(true)}
+                >
                   <ImageViewerWithZoom
                     images={images}
                     currentIndex={currentImageIndex}
@@ -701,7 +703,9 @@ const handleStartChat = async () => {
                     watermarkEnabled={watermarkSettings?.enabled ?? true}
                     watermarkPosition={watermarkSettings?.position ?? "pattern"}
                     watermarkOpacity={watermarkSettings?.opacity ?? 0.25}
-                    watermarkText={watermarkSettings?.text ?? "ashishproperties.in"}
+                    watermarkText={
+                      watermarkSettings?.text ?? "ashishproperties.in"
+                    }
                     allowDownload={true}
                   />
                 </CardContent>
@@ -712,7 +716,9 @@ const handleStartChat = async () => {
             <ImageModal
               isOpen={imageModalOpen}
               onClose={() => setImageModalOpen(false)}
-              images={images.map((img) => (typeof img === "string" ? img : img.url || "/placeholder.png"))}
+              images={images.map((img) =>
+                typeof img === "string" ? img : img.url || "/placeholder.png",
+              )}
               initialIndex={currentImageIndex}
               title={property.title}
             />
@@ -949,7 +955,10 @@ const handleStartChat = async () => {
             </Card>
 
             {/* Location Map - Only show if location data exists */}
-            {(property.location?.address || property.location?.city || property.location?.sector || property.location?.colony) && (
+            {(property.location?.address ||
+              property.location?.city ||
+              property.location?.sector ||
+              property.location?.colony) && (
               <Card>
                 <CardContent className="p-4">
                   <LocationMap

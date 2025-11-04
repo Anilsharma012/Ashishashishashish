@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ZoomIn, ZoomOut, X, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {
+  ZoomIn,
+  ZoomOut,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from "lucide-react";
 import { Button } from "./ui/button";
 
 interface ImageModalProps {
@@ -182,7 +189,8 @@ export default function ImageModal({
           className="relative w-full h-full flex items-center justify-center"
           onMouseDown={handleMouseDown}
           style={{
-            cursor: zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+            cursor:
+              zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "default",
           }}
         >
           <img

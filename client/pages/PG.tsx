@@ -90,7 +90,9 @@ export default function PG() {
       }
 
       // Map slug to propertyType for API query
-      const getPropertyTypeForSlug = (slug: string): { propertyType?: string; subCategory?: string } => {
+      const getPropertyTypeForSlug = (
+        slug: string,
+      ): { propertyType?: string; subCategory?: string } => {
         // All PG subcategories map to propertyType="pg"
         return { propertyType: "pg", subCategory: slug };
       };

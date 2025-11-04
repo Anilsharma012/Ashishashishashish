@@ -91,10 +91,22 @@ export default function Lease() {
       }
 
       // Map slug to propertyType for API query
-      const getPropertyTypeForSlug = (slug: string): { propertyType?: string; subCategory?: string } => {
+      const getPropertyTypeForSlug = (
+        slug: string,
+      ): { propertyType?: string; subCategory?: string } => {
         const slugLower = slug.toLowerCase();
 
-        if (slugLower === "commercial" || ["office", "retail", "warehouse", "industrial", "restaurant", "hotel"].includes(slugLower)) {
+        if (
+          slugLower === "commercial" ||
+          [
+            "office",
+            "retail",
+            "warehouse",
+            "industrial",
+            "restaurant",
+            "hotel",
+          ].includes(slugLower)
+        ) {
           return { propertyType: "commercial" };
         }
 
