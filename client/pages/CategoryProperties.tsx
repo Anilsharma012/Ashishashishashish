@@ -80,6 +80,10 @@ export default function CategoryProperties() {
   // Drawer / sidebar
   const [showFilters, setShowFilters] = useState(false);
 
+  // Image zoom modal
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedPropertyForZoom, setSelectedPropertyForZoom] = useState<Property | null>(null);
+
   // Initialize filters from URL params on mount
   const getInitialFilters = (): FilterState => {
     return {
