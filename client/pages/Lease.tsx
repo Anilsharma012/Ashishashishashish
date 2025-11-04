@@ -24,6 +24,51 @@ export default function Lease() {
     fetchSubcategories();
   }, []);
 
+  const getFallbackSubcategories = (): Subcategory[] => [
+    {
+      id: "office",
+      name: "Office Space",
+      slug: "office",
+      description: "Commercial office space",
+      count: 0,
+    },
+    {
+      id: "retail",
+      name: "Retail Space",
+      slug: "retail",
+      description: "Shops and showrooms",
+      count: 0,
+    },
+    {
+      id: "warehouse",
+      name: "Warehouse",
+      slug: "warehouse",
+      description: "Storage and warehouse",
+      count: 0,
+    },
+    {
+      id: "industrial",
+      name: "Industrial",
+      slug: "industrial",
+      description: "Industrial properties",
+      count: 0,
+    },
+    {
+      id: "restaurant",
+      name: "Restaurant Space",
+      slug: "restaurant",
+      description: "Restaurant and food space",
+      count: 0,
+    },
+    {
+      id: "hotel",
+      name: "Hotel/Lodge",
+      slug: "hotel",
+      description: "Hospitality properties",
+      count: 0,
+    },
+  ];
+
   const fetchSubcategories = async () => {
     try {
       setLoading(true);
@@ -32,66 +77,78 @@ export default function Lease() {
       );
       const data = apiResponse?.json || {};
 
+      let fetchedSubcategories: Subcategory[] = [];
+
       if (apiResponse?.ok && data?.success && Array.isArray(data.data)) {
-        setSubcategories(data.data);
-        return;
+        fetchedSubcategories = data.data;
       } else {
         console.warn(
           "Subcategories API non-OK; using fallback",
           apiResponse?.status,
           data?.error,
         );
+        fetchedSubcategories = getFallbackSubcategories();
       }
+
+      // Map slug to propertyType for API query
+      const getPropertyTypeForSlug = (slug: string): { propertyType?: string; subCategory?: string } => {
+        const slugLower = slug.toLowerCase();
+
+        if (slugLower === "commercial" || ["office", "retail", "warehouse", "industrial", "restaurant", "hotel"].includes(slugLower)) {
+          return { propertyType: "commercial" };
+        }
+
+        return { subCategory: slugLower };
+      };
+
+      // Fetch live property counts for each subcategory
+      const subcategoriesWithCounts = await Promise.all(
+        fetchedSubcategories.map(async (sub) => {
+          try {
+            // Map slug to propertyType
+            const mapping = getPropertyTypeForSlug(sub.slug);
+
+            // Build query params
+            const params = new URLSearchParams();
+            params.append("priceType", "lease");
+            params.append("limit", "1");
+
+            if (mapping.propertyType) {
+              params.append("propertyType", mapping.propertyType);
+            }
+            if (mapping.subCategory) {
+              params.append("subCategory", mapping.subCategory);
+            }
+
+            const countResponse = await (window as any).api(
+              `/properties?${params}`,
+            );
+
+            let count = sub.count || 0;
+            if (
+              countResponse.ok &&
+              countResponse.json?.success &&
+              countResponse.json.data?.pagination
+            ) {
+              count = countResponse.json.data.pagination.total || 0;
+            }
+
+            return { ...sub, count };
+          } catch (error) {
+            console.error(
+              `Error fetching count for subcategory ${sub.slug}:`,
+              error,
+            );
+            return sub;
+          }
+        }),
+      );
+
+      setSubcategories(subcategoriesWithCounts);
     } catch (error) {
       console.warn("Subcategories API failed, using fallback:", error);
+      setSubcategories(getFallbackSubcategories());
     } finally {
-      // Fallback demo data (always ensure UI has content)
-      if (!Array.isArray(subcategories) || subcategories.length === 0) {
-        setSubcategories([
-          {
-            id: "office",
-            name: "Office Space",
-            slug: "office",
-            description: "Commercial office space",
-            count: 35,
-          },
-          {
-            id: "retail",
-            name: "Retail Space",
-            slug: "retail",
-            description: "Shops and showrooms",
-            count: 28,
-          },
-          {
-            id: "warehouse",
-            name: "Warehouse",
-            slug: "warehouse",
-            description: "Storage and warehouse",
-            count: 12,
-          },
-          {
-            id: "industrial",
-            name: "Industrial",
-            slug: "industrial",
-            description: "Industrial properties",
-            count: 8,
-          },
-          {
-            id: "restaurant",
-            name: "Restaurant Space",
-            slug: "restaurant",
-            description: "Restaurant and food space",
-            count: 15,
-          },
-          {
-            id: "hotel",
-            name: "Hotel/Lodge",
-            slug: "hotel",
-            description: "Hospitality properties",
-            count: 6,
-          },
-        ]);
-      }
       setLoading(false);
     }
   };
