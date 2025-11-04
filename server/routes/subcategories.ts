@@ -42,14 +42,24 @@ export const getSubcategories: RequestHandler = async (req, res) => {
 
       // Map category to appropriate property field filter
       if (category === "buy" || category === "sale") {
-        propertyFilter.priceType = "sale";
+        // Buy category includes both residential and plot types for sale
+        propertyFilter.$or = [
+          { propertyType: "residential", priceType: "sale" },
+          { propertyType: "plot", priceType: "sale" },
+        ];
       } else if (category === "rent") {
+        propertyFilter.propertyType = "residential";
         propertyFilter.priceType = "rent";
       } else if (category === "lease") {
         propertyFilter.priceType = "lease";
       } else if (category === "pg") {
         propertyFilter.propertyType = "pg";
+      } else if (category === "commercial") {
+        propertyFilter.propertyType = "commercial";
+      } else if (category === "agricultural") {
+        propertyFilter.propertyType = "agricultural";
       } else {
+        // Fallback: use category as property type
         propertyFilter.propertyType = category;
       }
 
@@ -188,14 +198,24 @@ export const getSubcategoriesWithCounts: RequestHandler = async (req, res) => {
 
       // Map category to appropriate property field filter
       if (category === "buy" || category === "sale") {
-        propertyFilter.priceType = "sale";
+        // Buy category includes both residential and plot types for sale
+        propertyFilter.$or = [
+          { propertyType: "residential", priceType: "sale" },
+          { propertyType: "plot", priceType: "sale" },
+        ];
       } else if (category === "rent") {
+        propertyFilter.propertyType = "residential";
         propertyFilter.priceType = "rent";
       } else if (category === "lease") {
         propertyFilter.priceType = "lease";
       } else if (category === "pg") {
         propertyFilter.propertyType = "pg";
+      } else if (category === "commercial") {
+        propertyFilter.propertyType = "commercial";
+      } else if (category === "agricultural") {
+        propertyFilter.propertyType = "agricultural";
       } else {
+        // Fallback: use category as property type
         propertyFilter.propertyType = category;
       }
 
