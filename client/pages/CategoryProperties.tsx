@@ -159,7 +159,7 @@ export default function CategoryProperties() {
 
       // Handle category and subcategory from URL
       const currentCategory = getCurrentCategory();
-      
+
       // Set priceType based on main category (buy/rent/lease/pg)
       if (currentCategory === "buy" || currentCategory === "sale") {
         params.append("priceType", "sale");
@@ -177,9 +177,11 @@ export default function CategoryProperties() {
         params.append("propertyType", subcategory);
       }
 
-      // Handle subCategory from slug (e.g., /buy/residential/1bhk)
+      // Handle subCategory from slug (e.g., /buy/residential/1bhk or /buy/commercial)
       if (slug) {
         params.append("subCategory", slug);
+        // Also add the category parameter when we have a slug
+        params.append("category", currentCategory);
         // Also add propertyType if we have subcategory
         if (subcategory) {
           params.append("propertyType", subcategory);
@@ -190,7 +192,7 @@ export default function CategoryProperties() {
       if (category && !["buy", "sale", "rent", "lease", "pg"].includes(category) && !subcategory) {
         params.append("propertyType", category);
       }
-      
+
       if (propertyType) params.append("propertyType", propertyType);
 
       // Add filter parameters
