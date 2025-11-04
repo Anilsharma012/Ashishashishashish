@@ -50,13 +50,43 @@ export default function Rent() {
         fetchedSubcategories = getFallbackSubcategories();
       }
 
+      // Map slug to propertyType for API query
+      const getPropertyTypeForSlug = (slug: string): { propertyType?: string; subCategory?: string } => {
+        const slugLower = slug.toLowerCase();
+
+        // Map slug to propertyType and subCategory
+        if (["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(slugLower)) {
+          return { propertyType: "residential", subCategory: slugLower };
+        }
+
+        if (slugLower === "commercial") {
+          return { propertyType: "commercial" };
+        }
+
+        return { subCategory: slugLower };
+      };
+
       // Fetch live property counts for each subcategory
       const subcategoriesWithCounts = await Promise.all(
         fetchedSubcategories.map(async (sub) => {
           try {
-            // Query properties by subCategory for rent
+            // Map slug to propertyType
+            const mapping = getPropertyTypeForSlug(sub.slug);
+
+            // Build query params
+            const params = new URLSearchParams();
+            params.append("priceType", "rent");
+            params.append("limit", "1");
+
+            if (mapping.propertyType) {
+              params.append("propertyType", mapping.propertyType);
+            }
+            if (mapping.subCategory) {
+              params.append("subCategory", mapping.subCategory);
+            }
+
             const countResponse = await (window as any).api(
-              `/properties?category=rent&subCategory=${sub.slug}&limit=1`,
+              `/properties?${params}`,
             );
 
             let count = sub.count || 0;
