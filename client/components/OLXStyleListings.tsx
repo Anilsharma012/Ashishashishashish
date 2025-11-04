@@ -52,6 +52,9 @@ export default function OLXStyleListings() {
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedPropertyForZoom, setSelectedPropertyForZoom] = useState<Property | null>(null);
+
   /* --------------------------- Helpers --------------------------- */
   const notify = (msg: string, type: "success" | "error" = "success") => {
     try {
@@ -327,7 +330,7 @@ export default function OLXStyleListings() {
 
   /* -------------------------- UI helpers ------------------------ */
   // ✅ FULL DIGITS — no Cr/L/K, no commas
-  const formatPrice = (price: number) => `�� ${Math.round(Number(price || 0)).toString()}`;
+  const formatPrice = (price: number) => `₹ ${Math.round(Number(price || 0)).toString()}`;
 
   const getTimeAgo = (iso: string) => {
     const now = new Date();
