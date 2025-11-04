@@ -57,7 +57,13 @@ export const getProperties: RequestHandler = async (req, res) => {
       limit = "20",
     } = req.query;
 
-    const filter: any = { status: "active", approvalStatus: "approved" };
+    const filter: any = {
+      status: "active",
+      $or: [
+        { approvalStatus: "approved" },
+        { approvalStatus: { $exists: false } }
+      ]
+    };
 
     // Support filtering by category (buy, rent, commercial, etc.)
     if (category) {
