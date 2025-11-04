@@ -499,6 +499,19 @@ export default function OLXStyleListings() {
           ownerName={selectedProperty.contactInfo?.name || "Property Owner"}
         />
       )}
+
+      {/* Image Zoom Modal */}
+      {selectedPropertyForZoom && (
+        <ImageModal
+          isOpen={imageModalOpen}
+          onClose={() => {
+            setImageModalOpen(false);
+            setSelectedPropertyForZoom(null);
+          }}
+          images={selectedPropertyForZoom.images?.filter((img) => typeof img === 'string' || img?.url).map((img) => typeof img === 'string' ? img : (img as any).url) || []}
+          title={selectedPropertyForZoom.title}
+        />
+      )}
     </div>
   );
 }
