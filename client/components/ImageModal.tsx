@@ -1,10 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface ImageModalProps {
@@ -107,17 +102,21 @@ export default function ImageModal({
         ctx.restore();
 
         // Download the canvas as image
-        canvas.toBlob((blob) => {
-          if (!blob) return;
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `property-image-${currentIndex + 1}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-        }, "image/jpeg", 0.95);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return;
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `property-image-${currentIndex + 1}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          },
+          "image/jpeg",
+          0.95,
+        );
       };
       img.src = window.URL.createObjectURL(blob);
     } catch (error) {

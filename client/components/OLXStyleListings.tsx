@@ -50,10 +50,13 @@ export default function OLXStyleListings() {
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
 
   const [enquiryModalOpen, setEnquiryModalOpen] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+    null,
+  );
 
   const [imageModalOpen, setImageModalOpen] = useState(false);
-  const [selectedPropertyForZoom, setSelectedPropertyForZoom] = useState<Property | null>(null);
+  const [selectedPropertyForZoom, setSelectedPropertyForZoom] =
+    useState<Property | null>(null);
 
   /* --------------------------- Helpers --------------------------- */
   const notify = (msg: string, type: "success" | "error" = "success") => {
@@ -88,11 +91,18 @@ export default function OLXStyleListings() {
   // GET helper (window.api if available) — returns {ok,status,json}
   const apiGet = async (path: string) => {
     const anyWin = window as any;
-    const opts = { headers: buildAuthHeaders(), credentials: "include" as const };
+    const opts = {
+      headers: buildAuthHeaders(),
+      credentials: "include" as const,
+    };
     if (anyWin.api) {
       try {
         const r = await anyWin.api(path, opts);
-        return { ok: r?.ok ?? true, status: r?.status ?? 200, json: r?.json ?? r };
+        return {
+          ok: r?.ok ?? true,
+          status: r?.status ?? 200,
+          json: r?.json ?? r,
+        };
       } catch {
         /* fall-through to fetch */
       }
@@ -113,7 +123,11 @@ export default function OLXStyleListings() {
     if (anyWin.api) {
       try {
         const r = await anyWin.api(path, opts);
-        return { ok: r?.ok ?? (r?.status ? r.status < 400 : true), status: r?.status ?? 200, json: r?.json ?? r };
+        return {
+          ok: r?.ok ?? (r?.status ? r.status < 400 : true),
+          status: r?.status ?? 200,
+          json: r?.json ?? r,
+        };
       } catch {
         /* fall-through */
       }
@@ -196,7 +210,9 @@ export default function OLXStyleListings() {
         title: "3 BHK Flat for Sale in Rohtak",
         price: 4500000,
         location: { city: "Rohtak", state: "Haryana" },
-        images: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800"],
+        images: [
+          "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800",
+        ],
         propertyType: "apartment",
         createdAt: new Date().toISOString(),
         contactInfo: { name: "Rajesh Kumar" },
@@ -206,7 +222,9 @@ export default function OLXStyleListings() {
         title: "2 BHK Independent House",
         price: 3200000,
         location: { city: "Rohtak", state: "Haryana" },
-        images: ["https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800"],
+        images: [
+          "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800",
+        ],
         propertyType: "house",
         createdAt: new Date(Date.now() - 86400000).toISOString(),
         contactInfo: { name: "Priya Sharma" },
@@ -216,7 +234,9 @@ export default function OLXStyleListings() {
         title: "Commercial Shop for Rent",
         price: 25000,
         location: { city: "Rohtak", state: "Haryana" },
-        images: ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"],
+        images: [
+          "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800",
+        ],
         propertyType: "commercial",
         createdAt: new Date(Date.now() - 172800000).toISOString(),
         contactInfo: { name: "Amit Singh" },
@@ -226,7 +246,9 @@ export default function OLXStyleListings() {
         title: "4 BHK Villa with Garden",
         price: 8500000,
         location: { city: "Rohtak", state: "Haryana" },
-        images: ["https://images.unsplash.com/photo-1593696140826-c58b021acf8b?w=800"],
+        images: [
+          "https://images.unsplash.com/photo-1593696140826-c58b021acf8b?w=800",
+        ],
         propertyType: "villa",
         createdAt: new Date(Date.now() - 345600000).toISOString(),
         contactInfo: { name: "Vikash Yadav" },
@@ -240,7 +262,10 @@ export default function OLXStyleListings() {
   const serverToggleFavorite = async (id: string, makeFav: boolean) => {
     try {
       setFavBusy(id);
-      const res = await apiWrite(`favorites/${id}`, makeFav ? "POST" : "DELETE");
+      const res = await apiWrite(
+        `favorites/${id}`,
+        makeFav ? "POST" : "DELETE",
+      );
 
       const msg = (res?.json?.error || res?.json?.message || "")
         .toString()
@@ -249,7 +274,9 @@ export default function OLXStyleListings() {
       // Unauthorized → treat as logged-out UX
       if (res.status === 401) {
         const cur = getLocalFavIds();
-        const next = makeFav ? Array.from(new Set([id, ...cur])) : cur.filter((x) => x !== id);
+        const next = makeFav
+          ? Array.from(new Set([id, ...cur]))
+          : cur.filter((x) => x !== id);
         setLocalFavIds(next);
         window.dispatchEvent(new Event("favorites:changed"));
         return true;
@@ -259,8 +286,18 @@ export default function OLXStyleListings() {
       if (res.ok || res.status === 200 || res.status === 201) return true;
 
       // Duplicate add/remove → treat as success
-      if (makeFav && (res.status === 400 || res.status === 409) && msg.includes("already")) return true;
-      if (!makeFav && (res.status === 400 || res.status === 404) && (msg.includes("not in") || msg.includes("not found"))) return true;
+      if (
+        makeFav &&
+        (res.status === 400 || res.status === 409) &&
+        msg.includes("already")
+      )
+        return true;
+      if (
+        !makeFav &&
+        (res.status === 400 || res.status === 404) &&
+        (msg.includes("not in") || msg.includes("not found"))
+      )
+        return true;
 
       console.error("toggle favorite failed", res);
       return false;
@@ -290,7 +327,10 @@ export default function OLXStyleListings() {
 
     const ls = window.localStorage;
     const hasAnyToken =
-      token || ls.getItem("token") || ls.getItem("adminToken") || ls.getItem("authToken");
+      token ||
+      ls.getItem("token") ||
+      ls.getItem("adminToken") ||
+      ls.getItem("authToken");
 
     /* ---------- LOGGED OUT: LOCAL STORAGE ---------- */
     if (!hasAnyToken) {
@@ -310,7 +350,7 @@ export default function OLXStyleListings() {
 
     // Optimistic UI
     setFavorites((prev) =>
-      currentlyFav ? prev.filter((x) => x !== id) : [id, ...prev]
+      currentlyFav ? prev.filter((x) => x !== id) : [id, ...prev],
     );
 
     const ok = await serverToggleFavorite(id, !currentlyFav);
@@ -318,7 +358,7 @@ export default function OLXStyleListings() {
     if (!ok) {
       // revert
       setFavorites((prev) =>
-        currentlyFav ? [id, ...prev] : prev.filter((x) => x !== id)
+        currentlyFav ? [id, ...prev] : prev.filter((x) => x !== id),
       );
       notify("Something went wrong, please try again.", "error");
       return;
@@ -330,7 +370,8 @@ export default function OLXStyleListings() {
 
   /* -------------------------- UI helpers ------------------------ */
   // ✅ FULL DIGITS — no Cr/L/K, no commas
-  const formatPrice = (price: number) => `₹ ${Math.round(Number(price || 0)).toString()}`;
+  const formatPrice = (price: number) =>
+    `₹ ${Math.round(Number(price || 0)).toString()}`;
 
   const getTimeAgo = (iso: string) => {
     const now = new Date();
@@ -352,7 +393,7 @@ export default function OLXStyleListings() {
         ? (p.images[0] as string)
         : (p.images?.[0] as any)?.url) ||
       "/placeholder.png",
-    []
+    [],
   );
 
   /* ---------------------------- Render -------------------------- */
@@ -508,7 +549,13 @@ export default function OLXStyleListings() {
             setImageModalOpen(false);
             setSelectedPropertyForZoom(null);
           }}
-          images={selectedPropertyForZoom.images?.filter((img) => typeof img === 'string' || img?.url).map((img) => typeof img === 'string' ? img : (img as any).url) || []}
+          images={
+            selectedPropertyForZoom.images
+              ?.filter((img) => typeof img === "string" || img?.url)
+              .map((img) =>
+                typeof img === "string" ? img : (img as any).url,
+              ) || []
+          }
           title={selectedPropertyForZoom.title}
         />
       )}

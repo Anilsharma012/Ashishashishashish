@@ -42,8 +42,8 @@ export default function Watermark({
           text{font-family: sans-serif; font-weight:600; font-size:${fontSize}px; fill:#000; opacity:${opacity};}
         </style>
       </defs>
-      <g transform='rotate(${angle} ${tileW/2} ${tileH/2})'>
-        <text x='20' y='${tileH/2}'>${text}</text>
+      <g transform='rotate(${angle} ${tileW / 2} ${tileH / 2})'>
+        <text x='20' y='${tileH / 2}'>${text}</text>
       </g>
     </svg>
   `);
@@ -51,7 +51,10 @@ export default function Watermark({
   return (
     <div
       aria-hidden
-      className={["pointer-events-none select-none absolute inset-0 z-10", className].join(" ")}
+      className={[
+        "pointer-events-none select-none absolute inset-0 z-10",
+        className,
+      ].join(" ")}
       style={{
         backgroundImage: `url("data:image/svg+xml,${svg}")`,
         backgroundRepeat: "repeat",

@@ -82,7 +82,8 @@ export default function CategoryProperties() {
 
   // Image zoom modal
   const [imageModalOpen, setImageModalOpen] = useState(false);
-  const [selectedPropertyForZoom, setSelectedPropertyForZoom] = useState<Property | null>(null);
+  const [selectedPropertyForZoom, setSelectedPropertyForZoom] =
+    useState<Property | null>(null);
 
   // Initialize filters from URL params on mount
   const getInitialFilters = (): FilterState => {
@@ -267,13 +268,17 @@ export default function CategoryProperties() {
       // Add sorting
       if (filters.sortBy) params.append("sortBy", filters.sortBy);
 
-      const apiResponse = await (window as any).api(`properties?${params.toString()}`);
+      const apiResponse = await (window as any).api(
+        `properties?${params.toString()}`,
+      );
       const data = apiResponse.ok
         ? apiResponse.json
         : { success: false, error: "Failed to fetch properties" };
 
       if (data.success && data.data) {
-        setProperties(Array.isArray(data.data.properties) ? data.data.properties : []);
+        setProperties(
+          Array.isArray(data.data.properties) ? data.data.properties : [],
+        );
       } else {
         console.warn("API response:", data);
         setProperties([]);
@@ -821,9 +826,13 @@ export default function CategoryProperties() {
                         onClick={(e) => {
                           e.stopPropagation();
                           const images = Array.isArray(property.images)
-                            ? property.images.map((img) =>
-                                typeof img === "string" ? img : (img as any)?.url
-                              ).filter(Boolean)
+                            ? property.images
+                                .map((img) =>
+                                  typeof img === "string"
+                                    ? img
+                                    : (img as any)?.url,
+                                )
+                                .filter(Boolean)
                             : [];
                           if (images.length > 0) {
                             setSelectedPropertyForZoom(property);
@@ -835,14 +844,22 @@ export default function CategoryProperties() {
                           target.src = "/placeholder.png";
                         }}
                       />
-                      <Watermark variant="badge" small text="ashishproperties.in" />
+                      <Watermark
+                        variant="badge"
+                        small
+                        text="ashishproperties.in"
+                      />
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           const images = Array.isArray(property.images)
-                            ? property.images.map((img) =>
-                                typeof img === "string" ? img : (img as any)?.url
-                              ).filter(Boolean)
+                            ? property.images
+                                .map((img) =>
+                                  typeof img === "string"
+                                    ? img
+                                    : (img as any)?.url,
+                                )
+                                .filter(Boolean)
                             : [];
                           if (images.length > 0) {
                             setSelectedPropertyForZoom(property);
@@ -947,7 +964,7 @@ export default function CategoryProperties() {
             Array.isArray(selectedPropertyForZoom.images)
               ? selectedPropertyForZoom.images
                   .map((img) =>
-                    typeof img === "string" ? img : (img as any)?.url
+                    typeof img === "string" ? img : (img as any)?.url,
                   )
                   .filter(Boolean)
               : []

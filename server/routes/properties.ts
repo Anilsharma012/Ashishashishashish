@@ -61,8 +61,8 @@ export const getProperties: RequestHandler = async (req, res) => {
       status: "active",
       $or: [
         { approvalStatus: "approved" },
-        { approvalStatus: { $exists: false } }
-      ]
+        { approvalStatus: { $exists: false } },
+      ],
     };
 
     // Support filtering by category (buy, rent, commercial, etc.)
@@ -445,15 +445,13 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
         .json({ success: false, error: "Invalid notification ID" });
     }
 
-    await db
-      .collection("user_notifications")
-      .updateOne(
-        {
-          _id: new ObjectId(String(notificationId)),
-          userId: new ObjectId(String(userId)),
-        },
-        { $set: { isRead: true, readAt: new Date() } },
-      );
+    await db.collection("user_notifications").updateOne(
+      {
+        _id: new ObjectId(String(notificationId)),
+        userId: new ObjectId(String(userId)),
+      },
+      { $set: { isRead: true, readAt: new Date() } },
+    );
 
     res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {
