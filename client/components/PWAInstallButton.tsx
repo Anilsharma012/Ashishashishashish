@@ -16,6 +16,8 @@ const PWAInstallButton = () => {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [apkAvailable, setApkAvailable] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     // Check if already installed
