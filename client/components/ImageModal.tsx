@@ -81,14 +81,45 @@ export default function ImageModal({
     try {
       const response = await fetch(currentImage);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `property-image-${currentIndex + 1}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        // Draw the image
+        ctx.drawImage(img, 0, 0);
+
+        // Add watermark
+        const fontSize = Math.max(40, Math.floor(img.width / 8));
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // Rotate canvas for diagonal watermark
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillText("ashishproperties.in", 0, 0);
+        ctx.restore();
+
+        // Download the canvas as image
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `property-image-${currentIndex + 1}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, "image/jpeg", 0.95);
+      };
+      img.src = window.URL.createObjectURL(blob);
     } catch (error) {
       console.error("Download failed:", error);
     }
