@@ -185,12 +185,13 @@ export default function ImageModal({
           onMouseDown={handleMouseDown}
           style={{
             cursor:
-              zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "default",
+              zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "pointer",
           }}
         >
           <img
             src={currentImage}
             alt={title}
+            onClick={handleToggleZoom}
             className="max-w-full max-h-full object-contain transition-transform"
             style={{
               transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
