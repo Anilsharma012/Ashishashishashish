@@ -35,12 +35,43 @@ export const getProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const {
-      propertyType, subCategory, priceType, sector, mohalla, landmark,
+      propertyType, subCategory, priceType, category, sector, mohalla, landmark,
       minPrice, maxPrice, bedrooms, bathrooms, minArea, maxArea,
       sortBy = "date_desc", page = "1", limit = "20",
     } = req.query;
 
     const filter: any = { status: "active", approvalStatus: "approved" };
+
+    // Support filtering by category (buy, rent, commercial, etc.)
+    if (category) {
+      const categoryStr = String(category).toLowerCase();
+      switch (categoryStr) {
+        case "buy":
+          // Both residential and plot types for sale
+          filter.$or = [
+            { propertyType: "residential", priceType: "sale" },
+            { propertyType: "plot", priceType: "sale" }
+          ];
+          break;
+        case "rent":
+          // Residential for rent
+          filter.propertyType = "residential";
+          filter.priceType = "rent";
+          break;
+        case "commercial":
+          // Commercial for sale or rent
+          filter.propertyType = "commercial";
+          break;
+        case "agricultural":
+          // Agricultural properties
+          filter.propertyType = "agricultural";
+          break;
+        case "pg":
+          // PG/Hostel
+          filter.propertyType = "pg";
+          break;
+      }
+    }
 
     if (propertyType) filter.propertyType = propertyType;
     if (subCategory) filter.subCategory = subCategory;
