@@ -182,6 +182,50 @@ const PWAInstallButton = () => {
     return null;
   }
 
+  // Show APK download for Android if available
+  if (apkAvailable && isMobile && !showInstallButton) {
+    return (
+      <div className="fixed left-0 right-0 z-40 bg-gradient-to-r from-[#C70000] to-[#A50000] text-white bottom-16 md:bottom-0 md:left-auto md:right-4 md:w-96 md:rounded-lg md:shadow-lg">
+        <div className="p-4 md:p-5">
+          {/* Header with icon and title */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3 flex-1">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                <Download className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm md:text-base font-bold">
+                  Download APK
+                </h3>
+                <p className="text-xs text-red-100">
+                  Android app available
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDismiss}
+              className="p-1 hover:bg-white/20 rounded transition-colors ml-2 shrink-0"
+              aria-label="Dismiss"
+              type="button"
+            >
+              <X className="h-4 w-4 text-white" />
+            </button>
+          </div>
+
+          {/* Download APK Button */}
+          <Button
+            onClick={handleAPKDownload}
+            size="sm"
+            className="w-full bg-white text-[#C70000] hover:bg-gray-100 font-bold text-base py-6"
+          >
+            <Download className="h-5 w-5 mr-2" />
+            <span>Download APK</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Show install button
   if (showInstallButton && deferredPrompt) {
     return (
