@@ -50,13 +50,57 @@ export default function Buy() {
         fetchedSubcategories = getFallbackSubcategories();
       }
 
+      // Map slug to propertyType for API query
+      const getPropertyTypeForSlug = (
+        slug: string,
+      ): { propertyType?: string; subCategory?: string } => {
+        const slugLower = slug.toLowerCase();
+
+        // Map slug to propertyType and subCategory
+        if (
+          ["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(
+            slugLower,
+          )
+        ) {
+          return { propertyType: "residential", subCategory: slugLower };
+        }
+
+        if (slugLower === "plot" || slugLower === "land") {
+          return { propertyType: "plot" };
+        }
+
+        if (slugLower === "commercial") {
+          return { propertyType: "commercial" };
+        }
+
+        if (slugLower === "agricultural") {
+          return { propertyType: "agricultural" };
+        }
+
+        return { subCategory: slugLower };
+      };
+
       // Fetch live property counts for each subcategory
       const subcategoriesWithCounts = await Promise.all(
         fetchedSubcategories.map(async (sub) => {
           try {
-            // Query properties by subCategory and category (buy includes residential + plot)
+            // Map slug to propertyType
+            const mapping = getPropertyTypeForSlug(sub.slug);
+
+            // Build query params
+            const params = new URLSearchParams();
+            params.append("priceType", "sale");
+            params.append("limit", "1");
+
+            if (mapping.propertyType) {
+              params.append("propertyType", mapping.propertyType);
+            }
+            if (mapping.subCategory) {
+              params.append("subCategory", mapping.subCategory);
+            }
+
             const countResponse = await (window as any).api(
-              `/properties?category=buy&subCategory=${sub.slug}&limit=1`,
+              `/properties?${params}`,
             );
 
             let count = sub.count || 0;

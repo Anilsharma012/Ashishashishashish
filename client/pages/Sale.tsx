@@ -27,83 +27,163 @@ export default function Sale() {
   const fetchSubcategories = async () => {
     try {
       setLoading(true);
-      // Use public endpoint backed by admin data
+      // Fetch subcategories from API
       const apiResponse = await (window as any).api(
         "/categories/sale/subcategories",
       );
+
+      let fetchedSubcategories: Subcategory[] = [];
+
       if (apiResponse.ok && apiResponse.json?.success) {
-        setSubcategories(apiResponse.json.data || []);
+        fetchedSubcategories = apiResponse.json.data || [];
       } else {
         console.warn(
-          "Subcategories API non-OK; using fallback",
+          "Subcategories API returned non-OK; using fallback",
           apiResponse.status,
           apiResponse.json?.error,
         );
+        fetchedSubcategories = getFallbackSubcategories();
       }
+
+      // Map slug to propertyType for API query
+      const getPropertyTypeForSlug = (
+        slug: string,
+      ): { propertyType?: string; subCategory?: string } => {
+        const slugLower = slug.toLowerCase();
+
+        if (
+          ["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(
+            slugLower,
+          )
+        ) {
+          return { propertyType: "residential", subCategory: slugLower };
+        }
+
+        if (slugLower === "plot" || slugLower === "land") {
+          return { propertyType: "plot" };
+        }
+
+        if (slugLower === "commercial") {
+          return { propertyType: "commercial" };
+        }
+
+        if (slugLower === "agricultural") {
+          return { propertyType: "agricultural" };
+        }
+
+        return { subCategory: slugLower };
+      };
+
+      // Fetch live property counts for each subcategory
+      const subcategoriesWithCounts = await Promise.all(
+        fetchedSubcategories.map(async (sub) => {
+          try {
+            // Map slug to propertyType
+            const mapping = getPropertyTypeForSlug(sub.slug);
+
+            // Build query params
+            const params = new URLSearchParams();
+            params.append("priceType", "sale");
+            params.append("limit", "1");
+
+            if (mapping.propertyType) {
+              params.append("propertyType", mapping.propertyType);
+            }
+            if (mapping.subCategory) {
+              params.append("subCategory", mapping.subCategory);
+            }
+
+            const countResponse = await (window as any).api(
+              `/properties?${params}`,
+            );
+
+            let count = sub.count || 0;
+            if (
+              countResponse.ok &&
+              countResponse.json?.success &&
+              countResponse.json.data?.pagination
+            ) {
+              count = countResponse.json.data.pagination.total || 0;
+            }
+
+            return { ...sub, count };
+          } catch (error) {
+            console.error(
+              `Error fetching count for subcategory ${sub.slug}:`,
+              error,
+            );
+            return sub;
+          }
+        }),
+      );
+
+      setSubcategories(subcategoriesWithCounts);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
-      setSubcategories([
-        {
-          id: "1bhk",
-          name: "1 BHK",
-          slug: "1bhk",
-          description: "Single bedroom apartments",
-          count: 45,
-        },
-        {
-          id: "2bhk",
-          name: "2 BHK",
-          slug: "2bhk",
-          description: "Two bedroom apartments",
-          count: 78,
-        },
-        {
-          id: "3bhk",
-          name: "3 BHK",
-          slug: "3bhk",
-          description: "Three bedroom apartments",
-          count: 52,
-        },
-        {
-          id: "4bhk",
-          name: "4+ BHK",
-          slug: "4bhk",
-          description: "Four or more bedrooms",
-          count: 23,
-        },
-        {
-          id: "villa",
-          name: "Villa",
-          slug: "villa",
-          description: "Independent villas",
-          count: 15,
-        },
-        {
-          id: "house",
-          name: "Independent House",
-          slug: "house",
-          description: "Independent houses",
-          count: 34,
-        },
-        {
-          id: "plot",
-          name: "Plot/Land",
-          slug: "plot",
-          description: "Plots and land",
-          count: 28,
-        },
-        {
-          id: "commercial",
-          name: "Commercial",
-          slug: "commercial",
-          description: "Commercial properties",
-          count: 19,
-        },
-      ]);
+      setSubcategories(getFallbackSubcategories());
     } finally {
       setLoading(false);
     }
   };
+
+  const getFallbackSubcategories = (): Subcategory[] => [
+    {
+      id: "1bhk",
+      name: "1 BHK",
+      slug: "1bhk",
+      description: "Single bedroom apartments",
+      count: 0,
+    },
+    {
+      id: "2bhk",
+      name: "2 BHK",
+      slug: "2bhk",
+      description: "Two bedroom apartments",
+      count: 0,
+    },
+    {
+      id: "3bhk",
+      name: "3 BHK",
+      slug: "3bhk",
+      description: "Three bedroom apartments",
+      count: 0,
+    },
+    {
+      id: "4bhk",
+      name: "4+ BHK",
+      slug: "4bhk",
+      description: "Four or more bedrooms",
+      count: 0,
+    },
+    {
+      id: "villa",
+      name: "Villa",
+      slug: "villa",
+      description: "Independent villas",
+      count: 0,
+    },
+    {
+      id: "house",
+      name: "Independent House",
+      slug: "house",
+      description: "Independent houses",
+      count: 0,
+    },
+    {
+      id: "plot",
+      name: "Plot/Land",
+      slug: "plot",
+      description: "Plots and land",
+      count: 0,
+    },
+    {
+      id: "commercial",
+      name: "Commercial",
+      slug: "commercial",
+      description: "Commercial properties",
+      count: 0,
+    },
+  ];
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
     navigate(`/sale/${subcategory.slug}`);
